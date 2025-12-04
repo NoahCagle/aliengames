@@ -1,7 +1,7 @@
 package com.decacagle.aliensmc.listeners;
 
 import com.decacagle.aliensmc.AliensGames;
-import com.decacagle.aliensmc.games.KnifeGame;
+import com.decacagle.aliensmc.games.HideAndSeek;
 import com.decacagle.aliensmc.games.RedLightGreenLight;
 import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
@@ -30,14 +30,14 @@ public class SquidGameEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (gameManager.getCurrentGame() instanceof KnifeGame) {
+        if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
             if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
-
-                if (isSeeker(attacker) && isSeeker(defender)) {
-                    attacker.sendRichMessage("<red>You can't attack another seeker!");
-                    event.setCancelled(true);
+                if (Globals.playerInList(attacker, hns.participants) && Globals.playerInList(defender, hns.participants)) {
+                    if (isSeeker(attacker) && isSeeker(defender)) {
+                        attacker.sendRichMessage("<red>You can't attack another seeker!");
+                        event.setCancelled(true);
+                    }
                 }
-
             }
         }
     }
@@ -69,25 +69,27 @@ public class SquidGameEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (gameManager.getCurrentGame() instanceof KnifeGame) {
-            if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                Block block = event.getClickedBlock();
+        if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
+            Player player = event.getPlayer();
+            if (Globals.playerInList(player, hns.participants)) {
+                if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    Block block = event.getClickedBlock();
 
-                if (block != null && block.getType().name().contains("DOOR")) {
-                    Player player = event.getPlayer();
-                    ItemStack key = player.getInventory().getItemInMainHand();
+                    if (block != null && block.getType().name().contains("DOOR")) {
+                        ItemStack key = player.getInventory().getItemInMainHand();
 
-                    if (block.getBlockData().getMaterial() == Material.CRIMSON_DOOR && !isPurpleKey(key)) {
-                        player.sendRichMessage("<red>You don't have the key to this door!");
-                        event.setCancelled(true);
-                    } else if (block.getBlockData().getMaterial() == Material.WARPED_DOOR && !isTielKey(key)) {
-                        player.sendRichMessage("<red>You don't have the key to this door!");
-                        event.setCancelled(true);
-                    } else if (block.getBlockData().getMaterial() == Material.SPRUCE_DOOR && !isBrownKey(key)) {
-                        player.sendRichMessage("<red>You don't have the key to this door!");
-                        event.setCancelled(true);
+                        if (block.getBlockData().getMaterial() == Material.CRIMSON_DOOR && !isPurpleKey(key)) {
+                            player.sendRichMessage("<red>You don't have the key to this door!");
+                            event.setCancelled(true);
+                        } else if (block.getBlockData().getMaterial() == Material.WARPED_DOOR && !isTielKey(key)) {
+                            player.sendRichMessage("<red>You don't have the key to this door!");
+                            event.setCancelled(true);
+                        } else if (block.getBlockData().getMaterial() == Material.SPRUCE_DOOR && !isBrownKey(key)) {
+                            player.sendRichMessage("<red>You don't have the key to this door!");
+                            event.setCancelled(true);
+                        }
+
                     }
-
                 }
             }
         }
@@ -127,7 +129,7 @@ public class SquidGameEvents implements Listener {
 
                     if (fromX != toX || fromY != toY || fromZ != toZ) {
                         plugin.logger.info(player.getName() + " moved during red light!");
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> redLightGreenLight.killPlayer(player), (int)(Math.random() * 40));
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> redLightGreenLight.killPlayer(player), (int) (Math.random() * 40));
                     }
                 }
             }

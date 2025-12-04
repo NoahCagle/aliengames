@@ -14,8 +14,6 @@ public class RedLightGreenLight extends Game {
     // measured in ticks
     private int minTimeBetweenToggle = 40, maxTimeBetweenToggle = 200;
 
-    private World world;
-
     private List<Player> toKill = new ArrayList<Player>();
 
     // 1 minute, in seconds
@@ -45,11 +43,9 @@ public class RedLightGreenLight extends Game {
             new Vector(944, 151, 1097)
     };
 
-    public RedLightGreenLight(AliensGames plugin) {
-        // i hate calling getWorld twice but fuck it
-        super(new Location(plugin.getServer().getWorld("squidgame"), 964, 123, 1091));
-        world = plugin.getServer().getWorld("squidgame");
-        this.plugin = plugin;
+    public RedLightGreenLight(AliensGames plugin, Player host) {
+        super(new Location(plugin.getServer().getWorld("squidgame"), 964, 123, 1091), plugin, host);
+        this.PRETTY_TITLE = "Red Light Green Light";
     }
 
     public void startGame() {

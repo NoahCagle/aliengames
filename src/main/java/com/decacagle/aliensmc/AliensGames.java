@@ -10,19 +10,16 @@ import java.util.logging.Logger;
 public final class AliensGames extends JavaPlugin {
 
     public Logger logger;
-    private GameManager gameManager;
+    public GameManager gameManager;
 
     @Override
     public void onEnable() {
         logger = this.getLogger();
         logger.info("AliensGames plugin has launched successfully!");
 
-        gameManager = new GameManager();
+        gameManager = new GameManager(this);
 
         registerCommand("alienkey", new KeyCommand());
-        registerCommand("alienknife", new KnifeCommand());
-        registerCommand("alienhider", new HiderCommand());
-        registerCommand("alienseeker", new SeekerCommand());
         registerCommand("agames", new GamesCommand(this, gameManager));
 
         getServer().getPluginManager().registerEvents(new SquidGameEvents(this, gameManager), this);
