@@ -4,6 +4,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
@@ -46,8 +47,18 @@ public class Globals {
         return false;
     }
 
-    public static void sendTitle(Player player, String title, String subtitle) {
+    /**
+     * Clears inventory entirely, including armor
+     */
+    public static void fullyClearInventory(Player player) {
+        PlayerInventory inv = player.getInventory();
+        inv.clear();
+        inv.setHelmet(null);
+        inv.setChestplate(null);
+        inv.setLeggings(null);
+        inv.setBoots(null);
 
+        inv.setItemInOffHand(null);
     }
 
 }

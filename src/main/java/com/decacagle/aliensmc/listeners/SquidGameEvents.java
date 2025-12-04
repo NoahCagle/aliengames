@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -69,6 +70,8 @@ public class SquidGameEvents implements Listener {
 
                         if ((playerX == ((int) HideAndSeek.ESCAPE_POINT_1.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_1.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_1.getZ())) || (playerX == ((int) HideAndSeek.ESCAPE_POINT_2.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_2.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_2.getZ()))) {
                             hns.registerEscape(player);
+                            player.teleport(hns.spawnpoint);
+                            player.setGameMode(GameMode.SPECTATOR);
                         }
 
                     }
@@ -190,6 +193,17 @@ public class SquidGameEvents implements Listener {
 
     public boolean isBrownKey(ItemStack item) {
         return Globals.displayNameEquals(item, Globals.BROWN_KEY_NAME) && item.getType() == Globals.BROWN_KEY_TYPE;
+    }
+
+    @EventHandler
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
+            if (event.getEntity() instanceof Player player) {
+                if (Globals.playerInList(player, hns.participants)) {
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
 
 }

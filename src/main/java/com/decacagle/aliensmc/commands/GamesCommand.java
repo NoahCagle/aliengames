@@ -8,12 +8,17 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public class GamesCommand implements BasicCommand {
 
     private GameManager gameManager;
     private AliensGames plugin;
+
+    private boolean showingKeyLocs = false;
 
     public GamesCommand(AliensGames plugin, GameManager gameManager) {
         this.gameManager = gameManager;
@@ -29,9 +34,11 @@ public class GamesCommand implements BasicCommand {
                 } else {
                     if (commandSourceStack.getSender() instanceof Player host) {
                         if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
-                            gameManager.prepareGame(new RedLightGreenLight(plugin, host));
-                            host.sendRichMessage("<yellow>Preparing to play " + RedLightGreenLight.PRETTY_TITLE);
-                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+//                            gameManager.prepareGame(new RedLightGreenLight(plugin, host));
+//                            host.sendRichMessage("<yellow>Preparing to play " + RedLightGreenLight.PRETTY_TITLE);
+//                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                            host.sendRichMessage("<red>Red Light Green Light is under construction!");
+                            host.sendRichMessage("<red>sowwy... :(");
                         } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
                             gameManager.prepareGame(new HideAndSeek(plugin, host));
                             host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
@@ -75,7 +82,31 @@ public class GamesCommand implements BasicCommand {
                     sender.sendRichMessage("<gold><bold>Hostable Games:");
                     sender.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
                     sender.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
+                } else if (args[0].equalsIgnoreCase("keylocs")) {
+                    World world = plugin.getServer().getWorld("squidgame");
+
+                    showingKeyLocs = !showingKeyLocs;
+
+                    commandSourceStack.getSender().sendRichMessage(showingKeyLocs ? "Showing key locations!" : "Hiding key locations!");
+
+                    for (Vector v : HideAndSeek.KEY_LOCATIONS) {
+                        Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
+                        world.setBlockData((int)v.getX(), (int)v.getY(), (int)v.getZ(), mat.createBlockData());
+                    }
+
                 }
+            } else if (args[0].equalsIgnoreCase("keylocs")) {
+                World world = plugin.getServer().getWorld("squidgame");
+
+                showingKeyLocs = !showingKeyLocs;
+
+                commandSourceStack.getSender().sendRichMessage(showingKeyLocs ? "Showing key locations!" : "Hiding key locations!");
+
+                for (Vector v : HideAndSeek.KEY_LOCATIONS) {
+                    Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
+                    world.setBlockData((int)v.getX(), (int)v.getY(), (int)v.getZ(), mat.createBlockData());
+                }
+
             } else {
                 commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");
             }

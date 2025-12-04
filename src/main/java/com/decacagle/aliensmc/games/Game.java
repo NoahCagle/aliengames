@@ -1,6 +1,10 @@
 package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,9 +29,10 @@ public class Game {
     public Game(Location spawnpoint, AliensGames plugin, Player host) {
         this.spawnpoint = spawnpoint;
         this.host = host;
-        participants.add(host);
         this.world = spawnpoint.getWorld();
         this.plugin = plugin;
+
+        addParticipant(host);
     }
 
     public void nextStep() {
@@ -50,9 +55,15 @@ public class Game {
 
     }
 
-    public void broadcastToPlayers(String richMessage) {
+    public void broadcastMessageToAllPlayers(String richMessage) {
         for (Player p : participants) {
             p.sendRichMessage(richMessage);
+        }
+    }
+
+    public void broadcastTitleToAllPlayers(Component title, Component subtitle) {
+        for (Player p : participants) {
+            p.showTitle(Title.title(title, subtitle));
         }
     }
 

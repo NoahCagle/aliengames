@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -22,10 +24,44 @@ public class HideAndSeek extends Game {
     public static Vector ESCAPE_POINT_1 = new Vector(308, 218, 888);
     public static Vector ESCAPE_POINT_2 = new Vector(406, 236, 991);
 
+    public static Vector[] KEY_LOCATIONS = new Vector[]{
+            new Vector(261, 236, 961),
+            new Vector(246, 236, 965),
+            new Vector(295, 236, 944),
+            new Vector(306, 236, 958),
+            new Vector(291, 236, 963),
+            new Vector(283, 236, 990),
+            new Vector(262, 236, 996),
+            new Vector(252, 236, 1076),
+            new Vector(262, 236, 1085),
+            new Vector(288, 236, 1067),
+            new Vector(270, 227, 1051),
+            new Vector(252, 227, 1069),
+            new Vector(252, 227, 1028),
+            new Vector(263, 227, 1016),
+            new Vector(283, 227, 1014),
+            new Vector(279, 227, 994),
+            new Vector(314, 227, 961),
+            new Vector(318, 227, 953),
+            new Vector(330, 227, 956),
+            new Vector(251, 227, 928),
+            new Vector(250, 218, 1001),
+            new Vector(255, 218, 987),
+            new Vector(252, 218, 1076),
+            new Vector(318, 218, 1087),
+            new Vector(358, 218, 1054),
+            new Vector(359, 218, 1064),
+            new Vector(291, 218, 1011),
+            new Vector(256, 218, 1018),
+            new Vector(254, 218, 1009),
+            new Vector(279, 218, 994),
+    };
+
     public List<HideAndSeekPlayer> hiders = new ArrayList<HideAndSeekPlayer>();
     public List<HideAndSeekPlayer> seekers = new ArrayList<HideAndSeekPlayer>();
 
     public Location mapLoc;
+    public Location leaderboardLoc;
 
     public boolean seekersSpawnedIn = false;
 
@@ -36,6 +72,7 @@ public class HideAndSeek extends Game {
     public HideAndSeek(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld("squidgame"), 183, 193, 1053, 90, 0), plugin, host);
         this.mapLoc = new Location(spawnpoint.getWorld(), 247.5, 227, 994.5, -90, 0);
+        this.leaderboardLoc = new Location(spawnpoint.getWorld(), 185, 191, 1119, 180, 0);
         this.PRETTY_TITLE = "Hide and Seek";
     }
 
@@ -46,17 +83,85 @@ public class HideAndSeek extends Game {
             for (HideAndSeekPlayer p : seekers) {
                 p.player.teleport(mapLoc);
             }
-            broadcastToPlayers("<red><bold>The seekers have entered the map!");
+            broadcastMessageToAllPlayers("<red><bold>The seekers have entered the map!");
             seekersSpawnedIn = true;
         }
 
-        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS) {
-            broadcastToPlayers("<red><bold>The game has ended!");
+
+        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameStarted) {
+            gameStarted = false;
+            // hiders win
+            broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             plugin.gameManager.stopGame();
         } else {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> timer(), 20);
+            if ((TOTAL_GAME_TIME_SECONDS - secondsPassed) % 60 == 0) {
+                int minutes = (TOTAL_GAME_TIME_SECONDS - secondsPassed) / 60;
+                if (minutes > 1)
+                    broadcastMessageToAllPlayers("<gold><bold>" + minutes + " minutes remain!");
+                else
+                    broadcastMessageToAllPlayers("<gold><bold>" + minutes + " minute remains!");
+            }
+            plugin.logger.info("gameStarted: " + gameStarted);
+            if (gameStarted) {
+                Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
+            } else {
+                showNameTags();
+                goToLeaderboard();
+            }
         }
 
+    }
+
+    public void goToLeaderboard() {
+        for (Player p : participants) {
+            p.setGameMode(GameMode.ADVENTURE);
+            p.teleport(leaderboardLoc);
+            Globals.fullyClearInventory(p);
+        }
+    }
+
+    public void checkGameStatus() {
+
+        if (allHidersEscapedOrEliminated()) {
+            if (anyHidersEscaped()) {
+                gameStarted = false;
+                // hiders win
+                broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+                plugin.gameManager.stopGame();
+            } else {
+                gameStarted = false;
+                // seekers win
+                broadcastTitleToAllPlayers(Component.text("Seekers win!", NamedTextColor.RED, TextDecoration.BOLD), Component.text(""));
+                plugin.gameManager.stopGame();
+            }
+        } else if (allSeekersEliminated()) {
+            gameStarted = false;
+            // hiders win
+            broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+            plugin.gameManager.stopGame();
+        }
+
+    }
+
+    public boolean allHidersEscapedOrEliminated() {
+        for (HideAndSeekPlayer p : hiders) {
+            if (!p.eliminiated && !p.escaped) return false;
+        }
+        return true;
+    }
+
+    public boolean allSeekersEliminated() {
+        for (HideAndSeekPlayer p : seekers) {
+            if (!p.eliminiated) return false;
+        }
+        return true;
+    }
+
+    public boolean anyHidersEscaped() {
+        for (HideAndSeekPlayer p : hiders) {
+            if (p.escaped) return true;
+        }
+        return false;
     }
 
     public void prepareGame() {
@@ -64,6 +169,9 @@ public class HideAndSeek extends Game {
     }
 
     public void startGame() {
+
+        hideNameTags();
+        healAll();
 
         gameStarted = true;
 
@@ -106,7 +214,7 @@ public class HideAndSeek extends Game {
         player.teleport(mapLoc);
 
         // clear player's inventory
-        player.getInventory().clear();
+        Globals.fullyClearInventory(player);
 
         // give hiders their chestplate
         ItemStack hiderChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
@@ -126,7 +234,7 @@ public class HideAndSeek extends Game {
         player.showTitle(Title.title(title, subtitle));
 
         // clear players inventory
-        player.getInventory().clear();
+        Globals.fullyClearInventory(player);
 
         // give seekers their chestplate
         ItemStack seekerChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
@@ -174,8 +282,10 @@ public class HideAndSeek extends Game {
         if (!foundPlayer) {
             plugin.logger.severe("Attempted to register the escape of " + escapee.getName() + " but was unable to find the player in the list of hiders!");
         } else {
-            broadcastToPlayers("<green><bold>" + escapee.getName() + " has escaped!");
+            broadcastMessageToAllPlayers("<green><bold>" + escapee.getName() + " has escaped!");
         }
+
+        checkGameStatus();
 
     }
 
@@ -220,102 +330,56 @@ public class HideAndSeek extends Game {
             hnsPlayer.player.showTitle(Title.title(title, subtitle));
 
             // broadcast killed announcement
-            broadcastToPlayers("<red><bold>" + eliminated.getName() + " has been eliminated!");
+            broadcastMessageToAllPlayers("<red><bold>" + eliminated.getName() + " has been eliminated!");
 
         }
+
+        checkGameStatus();
     }
 
     public void registerKill(Player killed, Player killer) {
-        boolean foundKiller = false;
-        boolean foundKilled = false;
         HideAndSeekPlayer killerHNSP = null;
         HideAndSeekPlayer killedHNSP = null;
 
         for (HideAndSeekPlayer p : seekers) {
             if (p.player.getUniqueId().compareTo(killer.getUniqueId()) == 0) {
-
                 killerHNSP = p;
-
-                foundKiller = true;
-                break;
-
-            }
-        }
-
-        if (!foundKiller) {
-            for (HideAndSeekPlayer p : hiders) {
-                if (p.player.getUniqueId().compareTo(killer.getUniqueId()) == 0) {
-
-                    killerHNSP = p;
-
-                    foundKiller = true;
-                    break;
-
-                }
-            }
-
-            if (!foundKiller) {
-                plugin.logger.severe("Attempted to register the kill of " + killed.getName() + " by " + killer.getName() + " but was unable to find " + killer.getName() + " in either list!");
-            }
-
-        }
-
-        for (HideAndSeekPlayer p : seekers) {
-            if (p.player.getUniqueId().compareTo(killed.getUniqueId()) == 0) {
-//
-//                Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
-//                Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
-//
-//                p.player.showTitle(Title.title(title, subtitle));
-
+            } else if (p.player.getUniqueId().compareTo(killed.getUniqueId()) == 0) {
                 killedHNSP = p;
-
-                foundKilled = true;
-                break;
-
             }
         }
 
-        if (!foundKilled) {
-            for (HideAndSeekPlayer p : hiders) {
-                if (p.player.getUniqueId().compareTo(killer.getUniqueId()) == 0) {
-
-                    Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
-                    Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
-
-                    p.player.showTitle(Title.title(title, subtitle));
-
-                    killedHNSP = p;
-
-                    foundKilled = true;
-                    break;
-
-                }
+        for (HideAndSeekPlayer p : hiders) {
+            if (p.player.getUniqueId().compareTo(killer.getUniqueId()) == 0) {
+                killerHNSP = p;
+            } else if (p.player.getUniqueId().compareTo(killed.getUniqueId()) == 0) {
+                killedHNSP = p;
             }
-
-            if (!foundKilled) {
-                plugin.logger.severe("Attempted to register the kill of " + killed.getName() + " by " + killer.getName() + " but was unable to find " + killed.getName() + " in either list!");
-            }
-
-            if (foundKilled && foundKiller && killedHNSP != null && killerHNSP != null) {
-
-                // Show title to killed player
-                Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
-                Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
-                killed.showTitle(Title.title(title, subtitle));
-
-                // broadcast killed announcement
-                broadcastToPlayers("<red><bold>" + killed.getName() + " has been eliminated!");
-
-                // give points
-                killedHNSP.eliminiated = true;
-
-                killerHNSP.kills++;
-                killerHNSP.killedPlayers.add(killed);
-
-            }
-
         }
+
+        if (killedHNSP != null && killerHNSP != null) {
+
+            // Show title to killed player
+            Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
+            Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
+            killed.showTitle(Title.title(title, subtitle));
+
+            // broadcast killed announcement
+            broadcastMessageToAllPlayers("<red><bold>" + killed.getName() + " has been eliminated!");
+
+            // give points
+            killedHNSP.eliminiated = true;
+
+            killerHNSP.kills++;
+            killerHNSP.killedPlayers.add(killed);
+
+        } else if (killedHNSP == null) {
+            plugin.logger.severe("Unable to find " + killed.getName() + " in either list!");
+        } else {
+            plugin.logger.severe("Unable to find " + killer.getName() + " in either list!");
+        }
+
+        checkGameStatus();
 
     }
 
@@ -328,6 +392,38 @@ public class HideAndSeek extends Game {
             }
         }
         return false;
+    }
+
+    public void hideNameTags() {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+
+        Team team = board.getTeam("hiddenNames");
+        if (team == null) {
+            team = board.registerNewTeam("hiddenNames");
+            team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+        }
+
+        for (Player player : participants) {
+            team.addEntry(player.getName());
+        }
+    }
+
+    public void showNameTags() {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+        Team team = board.getTeam("hiddenNames");
+
+        if (team != null) {
+            for (Player player : participants) {
+                team.removeEntry(player.getName());
+            }
+        }
+    }
+
+    public void healAll() {
+        for (Player p : participants) {
+            p.setHealth(20);
+            p.setFoodLevel(20);
+        }
     }
 
 }
