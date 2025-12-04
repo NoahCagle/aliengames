@@ -46,4 +46,8 @@ public class Globals {
         return false;
     }
 
+    public static void sendTitle(Player player, String title, String subtitle) {
+
+    }
+
 }

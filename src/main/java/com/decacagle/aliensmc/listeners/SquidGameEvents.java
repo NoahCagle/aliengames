@@ -7,12 +7,15 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -26,6 +29,87 @@ public class SquidGameEvents implements Listener {
     public SquidGameEvents(AliensGames plugin, GameManager gameManager) {
         this.plugin = plugin;
         this.gameManager = gameManager;
+    }
+
+    // Red Light Green Light Events
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        if (gameManager.getCurrentGame() instanceof RedLightGreenLight redLightGreenLight) {
+            if (player.getGameMode() == GameMode.ADVENTURE) {
+                if (redLightGreenLight.getRedLight() && redLightGreenLight.getSecondsInRedlight() > 1 && player.getLocation().getZ() > RedLightGreenLight.LINE_Z) {
+                    Location from = event.getFrom();
+                    Location to = event.getTo();
+
+                    int fromX = (int) from.getX();
+                    int fromY = (int) from.getY();
+                    int fromZ = (int) from.getZ();
+
+                    int toX = (int) to.getX();
+                    int toY = (int) to.getY();
+                    int toZ = (int) to.getZ();
+
+                    if (fromX != toX || fromY != toY || fromZ != toZ) {
+                        plugin.logger.info(player.getName() + " moved during red light!");
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> redLightGreenLight.killPlayer(player), (int) (Math.random() * 40));
+                    }
+                }
+            }
+        } else {
+            if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
+
+                if (hns.gameStarted) {
+
+                    if (hns.playerIsHider(player)) {
+
+                        int playerX = (int) player.getLocation().getX();
+                        int playerY = (int) player.getLocation().getY();
+                        int playerZ = (int) player.getLocation().getZ();
+
+                        if ((playerX == ((int) HideAndSeek.ESCAPE_POINT_1.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_1.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_1.getZ())) || (playerX == ((int) HideAndSeek.ESCAPE_POINT_2.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_2.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_2.getZ()))) {
+                            hns.registerEscape(player);
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+    }
+
+    // Hide and Seek events
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
+            Player player = event.getPlayer();
+            if (Globals.playerInList(player, hns.participants)) {
+                event.setCancelled(true);
+                player.setGameMode(GameMode.SPECTATOR);
+                player.teleport(player.getLocation());
+
+                EntityDamageEvent lastDamageEvent = player.getLastDamageCause();
+                if (lastDamageEvent == null) {
+                    hns.registerElimination(player);
+                } else {
+                    if (lastDamageEvent instanceof EntityDamageByEntityEvent damageByEntityEvent) {
+                        Entity damager = damageByEntityEvent.getDamager();
+
+                        if (damager instanceof Player attacker) {
+                            hns.registerKill(player, attacker);
+                        } else {
+                            hns.registerElimination(player);
+                        }
+
+                    } else {
+                        hns.registerElimination(player);
+                    }
+                }
+
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -106,34 +190,6 @@ public class SquidGameEvents implements Listener {
 
     public boolean isBrownKey(ItemStack item) {
         return Globals.displayNameEquals(item, Globals.BROWN_KEY_NAME) && item.getType() == Globals.BROWN_KEY_TYPE;
-    }
-
-    // Red Light Green Light Events
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        if (player.getGameMode() == GameMode.ADVENTURE) {
-            if (gameManager.getCurrentGame() instanceof RedLightGreenLight redLightGreenLight) {
-                if (redLightGreenLight.getRedLight() && redLightGreenLight.getSecondsInRedlight() > 1 && player.getLocation().getZ() > RedLightGreenLight.LINE_Z) {
-                    Location from = event.getFrom();
-                    Location to = event.getTo();
-
-                    int fromX = (int) from.getX();
-                    int fromY = (int) from.getY();
-                    int fromZ = (int) from.getZ();
-
-                    int toX = (int) to.getX();
-                    int toY = (int) to.getY();
-                    int toZ = (int) to.getZ();
-
-                    if (fromX != toX || fromY != toY || fromZ != toZ) {
-                        plugin.logger.info(player.getName() + " moved during red light!");
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> redLightGreenLight.killPlayer(player), (int) (Math.random() * 40));
-                    }
-                }
-            }
-        }
     }
 
 }

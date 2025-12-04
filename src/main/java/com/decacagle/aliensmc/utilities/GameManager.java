@@ -36,9 +36,11 @@ public class GameManager {
                 .append(Component.newline())
                 .append(Component.text(game.host.getName() + " is preparing to host a game of " + game.PRETTY_TITLE + "!", NamedTextColor.GREEN))
                 .append(Component.newline())
-                .append(Component.text("To join, use the ", NamedTextColor.GREEN))
+                .append(Component.text("To join, click this message or use the ", NamedTextColor.GREEN))
                 .append(Component.text("/agames join", NamedTextColor.GREEN, TextDecoration.BOLD))
                 .append(Component.text(" command!", NamedTextColor.GREEN))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/agames join"))
+                .hoverEvent(Component.text("Join " + game.PRETTY_TITLE))
                 .build();
 
         plugin.getServer().broadcast(announceMessage);

@@ -36,6 +36,10 @@ public class GamesCommand implements BasicCommand {
                             gameManager.prepareGame(new HideAndSeek(plugin, host));
                             host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
                             host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                        } else {
+                            host.sendRichMessage("<gold><bold>Hostable Games:");
+                            host.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
+                            host.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
                         }
                     } else {
                         commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");
@@ -67,6 +71,10 @@ public class GamesCommand implements BasicCommand {
                     } else {
                         sender.sendRichMessage("<red>There is no active game!");
                     }
+                } else if (args[0].equalsIgnoreCase("host")) {
+                    sender.sendRichMessage("<gold><bold>Hostable Games:");
+                    sender.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
+                    sender.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
                 }
             } else {
                 commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");

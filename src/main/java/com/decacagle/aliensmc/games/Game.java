@@ -50,6 +50,12 @@ public class Game {
 
     }
 
+    public void broadcastToPlayers(String richMessage) {
+        for (Player p : participants) {
+            p.sendRichMessage(richMessage);
+        }
+    }
+
     public void addParticipant(Player player) {
         participants.add(player);
         player.teleport(spawnpoint);
