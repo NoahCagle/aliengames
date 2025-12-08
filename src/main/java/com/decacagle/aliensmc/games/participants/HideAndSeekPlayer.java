@@ -13,6 +13,7 @@ public class HideAndSeekPlayer {
     public int escapeTime = 0;
     public int kills = 0;
     public boolean seeker;
+    public int points = 0;
 
     public List<Player> killedPlayers = new ArrayList<Player>();
 

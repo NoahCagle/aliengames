@@ -8,6 +8,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -17,6 +19,8 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class HideAndSeek extends Game {
@@ -56,12 +60,14 @@ public class HideAndSeek extends Game {
             new Vector(254, 218, 1009),
             new Vector(279, 218, 994),
     };
+    public List<Location> usedKeyLocations = new ArrayList<Location>();
+    public List<Location> unlockedDoorsLocations = new ArrayList<Location>();
 
     public List<HideAndSeekPlayer> hiders = new ArrayList<HideAndSeekPlayer>();
     public List<HideAndSeekPlayer> seekers = new ArrayList<HideAndSeekPlayer>();
 
     public Location mapLoc;
-    public Location leaderboardLoc;
+    public Location leaderboardLoc, firstPlaceLoc, secondPlaceLoc, thirdPlaceLoc;
 
     public boolean seekersSpawnedIn = false;
 
@@ -70,14 +76,21 @@ public class HideAndSeek extends Game {
     public final int TOTAL_GAME_TIME_SECONDS = 300;
 
     public HideAndSeek(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 183, 193, 1053, 90, 0), plugin, host);
+        super(new Location(plugin.getServer().getWorld("squidgame"), 183, 193, 1053, 90, 0), plugin, host, 2);
         this.mapLoc = new Location(spawnpoint.getWorld(), 247.5, 227, 994.5, -90, 0);
         this.leaderboardLoc = new Location(spawnpoint.getWorld(), 185, 191, 1119, 180, 0);
+        this.firstPlaceLoc = new Location(spawnpoint.getWorld(), 185, 193, 1110, 0, 0);
+        this.secondPlaceLoc = new Location(spawnpoint.getWorld(), 183, 192, 1110, 180, 0);
+        this.thirdPlaceLoc = new Location(spawnpoint.getWorld(), 187, 191, 1110, 180, 0);
         this.PRETTY_TITLE = "Hide and Seek";
     }
 
     public void timer() {
         secondsPassed++;
+
+        if (secondsPassed == 2) {
+            addKeysToChests();
+        }
 
         if (secondsPassed >= SEEKER_SPAWN_TIME_SECONDS && !seekersSpawnedIn) {
             for (HideAndSeekPlayer p : seekers) {
@@ -88,8 +101,8 @@ public class HideAndSeek extends Game {
         }
 
 
-        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameStarted) {
-            gameStarted = false;
+        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameRunning) {
+            gameRunning = false;
             // hiders win
             broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             plugin.gameManager.stopGame();
@@ -101,8 +114,7 @@ public class HideAndSeek extends Game {
                 else
                     broadcastMessageToAllPlayers("<gold><bold>" + minutes + " minute remains!");
             }
-            plugin.logger.info("gameStarted: " + gameStarted);
-            if (gameStarted) {
+            if (gameRunning) {
                 Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
             } else {
                 showNameTags();
@@ -112,11 +124,54 @@ public class HideAndSeek extends Game {
 
     }
 
+    public void givePointsToRemainingHiders() {
+        for (HideAndSeekPlayer p : hiders) {
+            if (!p.eliminiated && !p.escaped) {
+                p.player.sendRichMessage("<gold>Survived until the end!");
+                p.player.sendRichMessage("<bold><green>+5 points!");
+                p.points += 5;
+            }
+        }
+    }
+
+    public List<HideAndSeekPlayer> sortPlayersByPoints() {
+        List<HideAndSeekPlayer> allPlayers = new ArrayList<HideAndSeekPlayer>();
+        allPlayers.addAll(hiders);
+        allPlayers.addAll(seekers);
+
+        Collections.sort(allPlayers, (o1, o2) -> {
+            if(o1.points == o2.points)
+                return 0;
+            return o1.points < o2.points ? 1 : -1;
+        });
+
+        return allPlayers;
+
+    }
+
     public void goToLeaderboard() {
-        for (Player p : participants) {
-            p.setGameMode(GameMode.ADVENTURE);
-            p.teleport(leaderboardLoc);
-            Globals.fullyClearInventory(p);
+        removeKeyChests();
+
+        givePointsToRemainingHiders();
+
+        List<HideAndSeekPlayer> finalResults = sortPlayersByPoints();
+
+        broadcastMessageToAllPlayers("<underlined><gold><bold>Hide And Seek Results\n");
+
+        for (int i = 0; i < finalResults.size(); i++) {
+            HideAndSeekPlayer p = finalResults.get(i);
+            p.player.setGameMode(GameMode.ADVENTURE);
+            Globals.fullyClearInventory(p.player);
+            if (i == 0) {
+                p.player.teleport(firstPlaceLoc);
+            } else if (i == 1) {
+                p.player.teleport(secondPlaceLoc);
+            } else if (i == 2) {
+                p.player.teleport(thirdPlaceLoc);
+            } else {
+                p.player.teleport(leaderboardLoc);
+            }
+            broadcastMessageToAllPlayers("<green>" + (i + 1) + ": " + p.player.getName() + " - " + p.points + " points");
         }
     }
 
@@ -124,20 +179,20 @@ public class HideAndSeek extends Game {
 
         if (allHidersEscapedOrEliminated()) {
             if (anyHidersEscaped()) {
-                gameStarted = false;
+                gameRunning = false;
                 // hiders win
-                broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+                broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
                 plugin.gameManager.stopGame();
             } else {
-                gameStarted = false;
+                gameRunning = false;
                 // seekers win
-                broadcastTitleToAllPlayers(Component.text("Seekers win!", NamedTextColor.RED, TextDecoration.BOLD), Component.text(""));
+                broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
                 plugin.gameManager.stopGame();
             }
         } else if (allSeekersEliminated()) {
-            gameStarted = false;
+            gameRunning = false;
             // hiders win
-            broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             plugin.gameManager.stopGame();
         }
 
@@ -172,8 +227,9 @@ public class HideAndSeek extends Game {
 
         hideNameTags();
         healAll();
+        spawnKeyChests();
 
-        gameStarted = true;
+        gameRunning = true;
 
         // go through list of participants, assign every other player to be hiders, and the rest as seekers
         boolean hider = true;
@@ -272,6 +328,10 @@ public class HideAndSeek extends Game {
                 Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
 
                 p.player.showTitle(Title.title(title, subtitle));
+
+                p.player.sendRichMessage("<gold>You have escaped!");
+                p.player.sendRichMessage("<bold><green>+10 points!");
+                p.points += 10;
 
                 foundPlayer = true;
                 break;
@@ -373,6 +433,20 @@ public class HideAndSeek extends Game {
             killerHNSP.kills++;
             killerHNSP.killedPlayers.add(killed);
 
+            if (killedHNSP.seeker && !killerHNSP.seeker) {
+                killer.sendRichMessage("<gold>You killed a seeker!");
+                killer.sendRichMessage("<bold><green>+20 points!");
+                killerHNSP.points += 20;
+            } else if (!killedHNSP.seeker && !killerHNSP.seeker) {
+                killer.sendRichMessage("<gold>You killed a fellow hider!");
+                killer.sendRichMessage("<bold><green>+5 points!");
+                killerHNSP.points += 5;
+            } else {
+                killer.sendRichMessage("<gold>You killed a hider!");
+                killer.sendRichMessage("<bold><green>+5 points!");
+                killerHNSP.points += 5;
+            }
+
         } else if (killedHNSP == null) {
             plugin.logger.severe("Unable to find " + killed.getName() + " in either list!");
         } else {
@@ -424,6 +498,101 @@ public class HideAndSeek extends Game {
             p.setHealth(20);
             p.setFoodLevel(20);
         }
+    }
+
+    public void spawnKeyChests() {
+        int[] usedIndex = new int[] {-1, -1, -1};
+
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * KEY_LOCATIONS.length);
+
+            while (index == usedIndex[0] || index == usedIndex[1] || index == usedIndex[2]) {
+                index = (int) (Math.random() * KEY_LOCATIONS.length);
+            }
+
+            usedIndex[i] = index;
+
+            Vector chosenLoc = KEY_LOCATIONS[index];
+            Location loc = new Location(world, chosenLoc.getX(), chosenLoc.getY(), chosenLoc.getZ());
+
+            usedKeyLocations.add(loc);
+
+        }
+
+    }
+
+    public void addKeysToChests() {
+        ItemStack purpleKey = getPurpleKey();
+        ItemStack tielKey = getTielKey();
+        ItemStack brownKey = getBrownKey();
+
+        for (int i = 0; i < 3; i++) {
+            Location loc = usedKeyLocations.get(i);
+
+            Block b = loc.getBlock();
+            b.setType(Material.CHEST);
+
+            Chest chest = (Chest) b.getState();
+
+            if (i == 0) {
+                chest.getInventory().addItem(purpleKey);
+                plugin.logger.info("Placed purple key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
+            } else if (i == 1) {
+                chest.getInventory().addItem(tielKey);
+                plugin.logger.info("Placed tiel key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
+            } else {
+                chest.getInventory().addItem(brownKey);
+                plugin.logger.info("Placed brown key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
+            }
+
+            chest.update(true);
+
+        }
+    }
+
+    public void removeKeyChests() {
+        for (Location loc : usedKeyLocations) {
+            world.setBlockData(loc, Material.SNOW.createBlockData());
+        }
+        usedKeyLocations.clear();
+    }
+
+    public ItemStack getPurpleKey() {
+        ItemStack purpleKey = new ItemStack(Globals.PURPLE_KEY_TYPE);
+        ItemMeta purpleMeta = purpleKey.getItemMeta();
+
+        purpleMeta.displayName(Component.text(Globals.PURPLE_KEY_NAME)
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decoration(TextDecoration.ITALIC, false));
+        purpleKey.setItemMeta(purpleMeta);
+
+        return purpleKey;
+    }
+
+    public ItemStack getTielKey() {
+        ItemStack tielKey = new ItemStack(Globals.TIEL_KEY_TYPE);
+        ItemMeta tielMeta = tielKey.getItemMeta();
+
+        tielMeta.displayName(Component.text(Globals.TIEL_KEY_NAME)
+                .color(NamedTextColor.BLUE)
+                .decoration(TextDecoration.ITALIC, false));
+
+        tielKey.setItemMeta(tielMeta);
+
+        return tielKey;
+    }
+
+    public ItemStack getBrownKey() {
+        ItemStack brownKey = new ItemStack(Globals.BROWN_KEY_TYPE);
+        ItemMeta brownMeta = brownKey.getItemMeta();
+
+        brownMeta.displayName(Component.text(Globals.BROWN_KEY_NAME)
+                .color(NamedTextColor.GRAY)
+                .decoration(TextDecoration.ITALIC, false));
+
+        brownKey.setItemMeta(brownMeta);
+
+        return brownKey;
     }
 
 }

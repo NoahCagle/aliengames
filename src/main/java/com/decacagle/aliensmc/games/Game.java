@@ -2,8 +2,6 @@ package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -22,13 +20,16 @@ public class Game {
     public AliensGames plugin;
     public Player host;
 
-    public boolean gameStarted = false;
+    public boolean gameRunning = false;
 
     public static String PRETTY_TITLE;
 
-    public Game(Location spawnpoint, AliensGames plugin, Player host) {
+    public int minPlayers;
+
+    public Game(Location spawnpoint, AliensGames plugin, Player host, int minPlayers) {
         this.spawnpoint = spawnpoint;
         this.host = host;
+        this.minPlayers = minPlayers;
         this.world = spawnpoint.getWorld();
         this.plugin = plugin;
 
@@ -71,6 +72,14 @@ public class Game {
         participants.add(player);
         player.teleport(spawnpoint);
         player.setGameMode(GameMode.ADVENTURE);
+    }
+
+    public void reportPlayerDisconnect(Player player) {
+
+    }
+
+    public void forceGameEnd() {
+
     }
 
 }

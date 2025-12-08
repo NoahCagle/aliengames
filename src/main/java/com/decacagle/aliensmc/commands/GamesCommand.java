@@ -2,6 +2,7 @@ package com.decacagle.aliensmc.commands;
 
 import com.decacagle.aliensmc.AliensGames;
 import com.decacagle.aliensmc.games.Game;
+import com.decacagle.aliensmc.games.GlassBridge;
 import com.decacagle.aliensmc.games.HideAndSeek;
 import com.decacagle.aliensmc.games.RedLightGreenLight;
 import com.decacagle.aliensmc.utilities.GameManager;
@@ -43,10 +44,15 @@ public class GamesCommand implements BasicCommand {
                             gameManager.prepareGame(new HideAndSeek(plugin, host));
                             host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
                             host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                        } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
+                            gameManager.prepareGame(new GlassBridge(plugin, host));
+                            host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
+                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
                         } else {
                             host.sendRichMessage("<gold><bold>Hostable Games:");
                             host.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
                             host.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
+                            host.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
                         }
                     } else {
                         commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");
@@ -59,8 +65,12 @@ public class GamesCommand implements BasicCommand {
                     if (gameManager.getCurrentGame() != null) {
                         Game currentGame = gameManager.getCurrentGame();
                         if (sender.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
-                            commandSourceStack.getSender().sendRichMessage("Starting active game!");
-                            gameManager.getCurrentGame().startGame();
+                            if (!currentGame.gameRunning) {
+                                commandSourceStack.getSender().sendRichMessage("<green>Starting active game!");
+                                gameManager.getCurrentGame().startGame();
+                            } else {
+                                commandSourceStack.getSender().sendRichMessage("<red>The game has already been started!");
+                            }
                         } else {
                             sender.sendRichMessage("<red><bold>You are not the host of this game!");
                             sender.sendRichMessage("<red>" + currentGame.host.getName() + " is the host of this game!");
@@ -82,6 +92,7 @@ public class GamesCommand implements BasicCommand {
                     sender.sendRichMessage("<gold><bold>Hostable Games:");
                     sender.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
                     sender.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
+                    sender.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
                 } else if (args[0].equalsIgnoreCase("keylocs")) {
                     World world = plugin.getServer().getWorld("squidgame");
 
@@ -91,7 +102,7 @@ public class GamesCommand implements BasicCommand {
 
                     for (Vector v : HideAndSeek.KEY_LOCATIONS) {
                         Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
-                        world.setBlockData((int)v.getX(), (int)v.getY(), (int)v.getZ(), mat.createBlockData());
+                        world.setBlockData((int) v.getX(), (int) v.getY(), (int) v.getZ(), mat.createBlockData());
                     }
 
                 }
@@ -104,7 +115,7 @@ public class GamesCommand implements BasicCommand {
 
                 for (Vector v : HideAndSeek.KEY_LOCATIONS) {
                     Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
-                    world.setBlockData((int)v.getX(), (int)v.getY(), (int)v.getZ(), mat.createBlockData());
+                    world.setBlockData((int) v.getX(), (int) v.getY(), (int) v.getZ(), mat.createBlockData());
                 }
 
             } else {

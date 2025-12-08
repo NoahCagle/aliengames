@@ -26,9 +26,9 @@ public class KeyCommand implements BasicCommand {
         ItemStack purpleKey = new ItemStack(Globals.PURPLE_KEY_TYPE);
         ItemMeta purpleMeta = purpleKey.getItemMeta();
         ItemStack tielKey = new ItemStack(Globals.TIEL_KEY_TYPE);
-        ItemMeta tielMeta = purpleKey.getItemMeta();
+        ItemMeta tielMeta = tielKey.getItemMeta();
         ItemStack brownKey = new ItemStack(Globals.BROWN_KEY_TYPE);
-        ItemMeta brownMeta = purpleKey.getItemMeta();
+        ItemMeta brownMeta = tielKey.getItemMeta();
 
         purpleMeta.displayName(Component.text(Globals.PURPLE_KEY_NAME)
                 .color(NamedTextColor.LIGHT_PURPLE)
