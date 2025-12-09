@@ -231,18 +231,18 @@ public class SquidGameEvents implements Listener {
                     if (block != null && block.getType().name().contains("DOOR") && !hns.unlockedDoorsLocations.contains(block.getLocation())) {
                         ItemStack key = player.getInventory().getItemInMainHand();
 
-                        if (block.getBlockData().getMaterial() == Material.CRIMSON_DOOR && !isPurpleKey(key)) {
-                            player.sendRichMessage("<red>You don't have the key to this door!");
-                            event.setCancelled(true);
-                        } else if (block.getBlockData().getMaterial() == Material.WARPED_DOOR && !isTielKey(key)) {
-                            player.sendRichMessage("<red>You don't have the key to this door!");
-                            event.setCancelled(true);
-                        } else if (block.getBlockData().getMaterial() == Material.SPRUCE_DOOR && !isBrownKey(key)) {
-                            player.sendRichMessage("<red>You don't have the key to this door!");
-                            event.setCancelled(true);
-                        } else {
+                        if (block.getBlockData().getMaterial() == Material.CRIMSON_DOOR && isPurpleKey(key)) {
                             hns.reportDoorOpen(player, block.getLocation());
                             plugin.logger.info("door opened at " + block.getX() + " " + block.getY() + " " + block.getZ());
+                        } else if (block.getBlockData().getMaterial() == Material.WARPED_DOOR && isTielKey(key)) {
+                            hns.reportDoorOpen(player, block.getLocation());
+                            plugin.logger.info("door opened at " + block.getX() + " " + block.getY() + " " + block.getZ());
+                        } else if (block.getBlockData().getMaterial() == Material.SPRUCE_DOOR && isBrownKey(key)) {
+                            hns.reportDoorOpen(player, block.getLocation());
+                            plugin.logger.info("door opened at " + block.getX() + " " + block.getY() + " " + block.getZ());
+                        } else {
+                            player.sendRichMessage("<red>You don't have the key to this door!");
+                            event.setCancelled(true);
                         }
 
                     }

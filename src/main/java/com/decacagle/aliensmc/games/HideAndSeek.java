@@ -56,10 +56,13 @@ public class HideAndSeek extends Game {
     public HideAndSeek(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld("squidgame"), 183, 266, 1053, 90, 0), plugin, host, 2);
         this.mapLoc = new Location(spawnpoint.getWorld(), 247.5, 227, 994.5, -90, 0);
+        this.PRETTY_TITLE = "Hide and Seek";
     }
 
     public void timer() {
         secondsPassed++;
+
+        updateTimer(Component.text("Time Remaining: "), TOTAL_GAME_TIME_SECONDS - secondsPassed);
 
         if (secondsPassed >= SEEKER_SPAWN_TIME_SECONDS && !seekersSpawnedIn) {
             for (HideAndSeekPlayer p : seekers) {
@@ -90,7 +93,7 @@ public class HideAndSeek extends Game {
 
     public void givePointsToRemainingHiders() {
         for (HideAndSeekPlayer p : hiders) {
-            if (!p.eliminiated && !p.escaped) {
+            if (!p.eliminated && !p.escaped) {
                 p.player.sendRichMessage("<gold>Survived until the end!");
                 p.player.sendRichMessage("<bold><green>+5 points!");
                 p.points += 5;
@@ -170,14 +173,14 @@ public class HideAndSeek extends Game {
 
     public boolean allHidersEscapedOrEliminated() {
         for (HideAndSeekPlayer p : hiders) {
-            if (!p.eliminiated && !p.escaped) return false;
+            if (!p.eliminated && !p.escaped) return false;
         }
         return true;
     }
 
     public boolean allSeekersEliminated() {
         for (HideAndSeekPlayer p : seekers) {
-            if (!p.eliminiated) return false;
+            if (!p.eliminated) return false;
         }
         return true;
     }
@@ -195,7 +198,7 @@ public class HideAndSeek extends Game {
 
     public void startGame() {
 
-        hideNameTags();
+//        hideNameTags();
         healAll();
         spawnKeyChests();
 
@@ -218,6 +221,8 @@ public class HideAndSeek extends Game {
         for (HideAndSeekPlayer p : seekers) {
             assignSeekerRole(p.player);
         }
+
+        initScoreboard();
 
         // start game timer
         Bukkit.getScheduler().runTaskLater(plugin, () -> timer(), 20);
@@ -303,6 +308,8 @@ public class HideAndSeek extends Game {
                 p.player.sendRichMessage("<bold><green>+10 points!");
                 p.points += 10;
 
+                updatePlayerLine(p);
+
                 foundPlayer = true;
                 break;
 
@@ -352,7 +359,7 @@ public class HideAndSeek extends Game {
         }
 
         if (hnsPlayer != null) {
-            hnsPlayer.eliminiated = true;
+            hnsPlayer.eliminated = true;
 
             Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
             Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
@@ -360,7 +367,9 @@ public class HideAndSeek extends Game {
             hnsPlayer.player.showTitle(Title.title(title, subtitle));
 
             // broadcast killed announcement
-            broadcastMessageToAllPlayers("<red><bold>" + eliminated.getName() + " has been eliminated!");
+            broadcastMessageToAllPlayers("<red><bold>Player " + eliminated.getName() + " has been eliminated!");
+
+            updatePlayerLine(hnsPlayer);
 
         }
 
@@ -395,10 +404,10 @@ public class HideAndSeek extends Game {
             killed.showTitle(Title.title(title, subtitle));
 
             // broadcast killed announcement
-            broadcastMessageToAllPlayers("<red><bold>" + killed.getName() + " has been eliminated!");
+            broadcastMessageToAllPlayers("<red><bold>Player " + killed.getName() + " has been eliminated!");
 
             // give points
-            killedHNSP.eliminiated = true;
+            killedHNSP.eliminated = true;
 
             killerHNSP.kills++;
             killerHNSP.killedPlayers.add(killed);
@@ -416,6 +425,9 @@ public class HideAndSeek extends Game {
                 killer.sendRichMessage("<bold><green>+5 points!");
                 killerHNSP.points += 5;
             }
+
+            updatePlayerLine(killedHNSP);
+            updatePlayerLine(killerHNSP);
 
         } else if (killedHNSP == null) {
             plugin.logger.severe("Unable to find " + killed.getName() + " in either list!");
@@ -583,10 +595,68 @@ public class HideAndSeek extends Game {
         }
     }
 
+    public void initScoreboard() {
+        createScoreboardWithTimer(PRETTY_TITLE);
+
+        Team hidersHeadline = createScoreboardLine(scoreboard, scoreboardObjective, "1000", 8, false);
+        hidersHeadline.prefix(Component.text("-- Hiders --", NamedTextColor.BLUE, TextDecoration.BOLD));
+
+
+        for (int i = 0; i < hiders.size(); i++) {
+            Player player = hiders.get(i).player;
+
+            Team playerLine = createScoreboardLine(scoreboard, scoreboardObjective, "" + i, -i, false);
+            playerLines.put(player, playerLine);
+
+            playerLine.prefix(Component.text(player.getName() + ": ", NamedTextColor.BLUE));
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+
+        }
+
+        Team seekersHeadline = createScoreboardLine(scoreboard, scoreboardObjective, "1001", -hiders.size(), false);
+        seekersHeadline.prefix(Component.text("-- Seekers --", NamedTextColor.RED, TextDecoration.BOLD));
+
+        for (int i = 0; i < seekers.size(); i++) {
+            Player player = seekers.get(i).player;
+
+            int lineIndexOffset = hiders.size() + 1;
+
+            Team playerLine = createScoreboardLine(scoreboard, scoreboardObjective, "" + (i + lineIndexOffset), -(i + lineIndexOffset), false);
+            playerLines.put(player, playerLine);
+
+            playerLine.prefix(Component.text(player.getName() + ": ", NamedTextColor.RED));
+            playerLine.suffix(Component.text("FAIL", NamedTextColor.RED, TextDecoration.BOLD));
+
+        }
+
+    }
+
+    // TODO: consider changing the logic of the scoreboard for this game
+    // In the show, seekers only 'pass' if they kill a hider. In our game, seekers will receive 0 points if they do not get a kill
+    // However, perhaps this could be reflected in the scoreboard. Instead of seekers showing a checkmark or an X, they could show a 'PASS' or 'FAIL'
+    public void updatePlayerLine(HideAndSeekPlayer player) {
+        Team playerLine = playerLines.get(player.player);
+
+        if (player.seeker && !player.eliminated) {
+            if (player.kills == 0) {
+                playerLine.suffix(Component.text("FAIL", NamedTextColor.RED, TextDecoration.BOLD));
+            } else {
+                playerLine.suffix(Component.text("PASS", NamedTextColor.GREEN, TextDecoration.BOLD));
+            }
+        } else if (player.escaped) {
+            playerLine.suffix(Component.text("⭐", NamedTextColor.GOLD, TextDecoration.BOLD));
+        } else if (player.eliminated) {
+            playerLine.suffix(Component.text("✘", NamedTextColor.RED, TextDecoration.BOLD));
+        } else {
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+        }
+    }
+
     public void cleanup() {
         removeKeyChests();
         closeOpenedDoors();
-        showNameTags();
+//        showNameTags();
+        removeScoreboard();
     }
 
 }

@@ -131,7 +131,14 @@ public class Game {
 
     public Team createScoreboardLine(Scoreboard board, Objective obj, String key, int score, boolean keyVisible) {
         Team team = board.registerNewTeam("line_" + score);
-        String invisiKey = "§" + key;
+        String invisiKey = "§a";
+
+        if (!keyVisible) {
+            for (int i = 0; i < key.length(); i++) {
+                invisiKey += ("§" + key.charAt(i));
+            }
+        }
+
         team.addEntry(keyVisible ? key : invisiKey);
         obj.getScore(keyVisible ? key : invisiKey).setScore(score);
         obj.getScore(keyVisible ? key : invisiKey).numberFormat(NumberFormat.blank());

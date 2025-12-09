@@ -8,7 +8,7 @@ import java.util.List;
 public class HideAndSeekPlayer {
 
     public Player player;
-    public boolean eliminiated = false;
+    public boolean eliminated = false;
     public boolean escaped = false;
     public int escapeTime = 0;
     public int kills = 0;

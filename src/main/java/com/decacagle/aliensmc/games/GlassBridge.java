@@ -83,9 +83,9 @@ public class GlassBridge extends Game {
 
     public void endGame() {
         if (gameRunning) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> bombBridge(), 60);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> goToLeaderboard(), 124*2);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 130*2);
+            Bukkit.getScheduler().runTaskLater(plugin, this::bombBridge, 60);
+            Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 124);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 130);
 
             gameRunning = false;
         }
@@ -95,7 +95,7 @@ public class GlassBridge extends Game {
 
         for (int i = 0; i < spaces.length; i++) {
             GlassBridgeSpace obj = spaces[i];
-            Bukkit.getScheduler().runTaskLater(plugin, () -> obj.explode(), i * 3);
+            Bukkit.getScheduler().runTaskLater(plugin, obj::explode, i * 3);
         }
 
     }
@@ -318,6 +318,8 @@ public class GlassBridge extends Game {
                 p.player.showTitle(Title.title(title, subtitle));
 
                 updatePlayerLine(p);
+
+                broadcastMessageToAllPlayers("<red><bold>Player " + eliminated.getName() + " has been eliminated!");
 
                 if (!p.takenFirstLeap) p.takenFirstLeap = true;
 

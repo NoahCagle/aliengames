@@ -247,6 +247,7 @@ public class RedLightGreenLight extends Game {
             player.player.showTitle(Title.title(Component.text("You've been eliminated!", NamedTextColor.RED), Component.text("")));
             randomCannonFire(player.player.getZ() > MIDPOINT_Z);
             updatePlayerLine(player);
+            broadcastMessageToAllPlayers("<red><bold>Player " + player.player.getName() + " has been eliminated!");
         }, 30 + randomDelay);
 
         greenLightCountdown += randomDelay;
