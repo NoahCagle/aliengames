@@ -211,7 +211,7 @@ public class GlassBridge extends Game {
 
         Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
-        replaceBridge();
+        cleanup();
 
     }
 
@@ -328,11 +328,8 @@ public class GlassBridge extends Game {
         return ret;
     }
 
-    public void healAll() {
-        for (Player p : participants) {
-            p.setHealth(20);
-            p.setFoodLevel(20);
-        }
+    public void cleanup() {
+        replaceBridge();
     }
 
 }

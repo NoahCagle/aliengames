@@ -2,3 +2,9 @@ name: AliensGames
 version: '1.0-SNAPSHOT'
 main: com.decacagle.aliensmc.AliensGames
 api-version: '1.21'
+
+permissions:
+  aliensgames.agames:
+    default: true
+  aliensgames.agames.admin:
+    default: op

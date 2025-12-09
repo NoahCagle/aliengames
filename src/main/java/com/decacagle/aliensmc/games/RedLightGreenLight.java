@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
@@ -18,7 +19,9 @@ import java.util.List;
 
 public class RedLightGreenLight extends Game {
 
-    private final int minToggleTime = 4, maxToggleTime = 10;
+    private Team scoreboardLightStatus;
+
+    private final int minToggleTime = 4, maxToggleTime = 8;
 
     // time before game starts, measured in seconds.
     private final int timeBeforeStart = 10;
@@ -39,8 +42,8 @@ public class RedLightGreenLight extends Game {
     private int redLightCountdown = 5;
     private int greenLightCountdown = 5;
 
-    // 0.5 second grace period
-    private int gracePeriodTicks = 10;
+    // 0.25 second grace period
+    private int gracePeriodTicks = 5;
 
     public boolean redLight = false;
 
@@ -63,6 +66,7 @@ public class RedLightGreenLight extends Game {
     }
 
     public void startGame() {
+        healAll();
 
         fillPlayerListAndTeleport();
 
@@ -98,6 +102,8 @@ public class RedLightGreenLight extends Game {
             plugin.logger.info("gameCountdown: " + gameCountdown);
 
             gameCountdown--;
+
+            updateTimer(Component.text("Time: "), gameCountdown);
 
             checkGameStatus();
 
@@ -189,6 +195,7 @@ public class RedLightGreenLight extends Game {
             }
         }
 
+        removeScoreboard();
         Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 20);
@@ -199,13 +206,23 @@ public class RedLightGreenLight extends Game {
         greenLightCountdown = 6;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             redLight = true;
+//            updateScoreboardDot();
         }, gracePeriodTicks);
+
+        playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.4f);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f), 3);
+
     }
 
     public void activateGreenLight() {
         redLight = false;
+//        updateScoreboardDot();
         broadcastTitleToAllPlayers(Component.text("Green Light!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""), lightFadeIn, lightOnScreen, lightFadeOut);
         redLightCountdown = randomToggleTimeSeconds();
+
+        playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.8f);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.2f), 8);
+
     }
 
     public void killPlayer(RedLightGreenLightPlayer player) {
@@ -219,6 +236,7 @@ public class RedLightGreenLight extends Game {
             player.player.setGameMode(GameMode.SPECTATOR);
             player.player.showTitle(Title.title(Component.text("You've been eliminated!", NamedTextColor.RED), Component.text("")));
             randomCannonFire(player.player.getZ() > MIDPOINT_Z);
+            updatePlayerLine(player);
         }, 30 + randomDelay);
 
         greenLightCountdown += randomDelay;
@@ -244,22 +262,14 @@ public class RedLightGreenLight extends Game {
     public void fillPlayerListAndTeleport() {
         double distanceBetweenPlayers = participants.size() > 26 ? (53.0 / participants.size()) : 2;
 
-        int spaceIter = 1;
+        double totalSpace = distanceBetweenPlayers * participants.size();
+        double startX = 965 - (totalSpace / 2);
 
         for (int i = 0; i < participants.size(); i++) {
             Player p = participants.get(i);
             players.add(new RedLightGreenLightPlayer(p));
 
-            if (i == 0) {
-                p.teleport(spawnpoint);
-            } else {
-                if (i % 2 == 0) {
-                    p.teleport(spawnpoint.add(distanceBetweenPlayers * spaceIter, 0, 0));
-                } else {
-                    p.teleport(spawnpoint.subtract(distanceBetweenPlayers * spaceIter, 0, 0));
-                    spaceIter++;
-                }
-            }
+            p.teleport(new Location(world, startX + (distanceBetweenPlayers * i), spawnpoint.getY(), spawnpoint.getZ(), spawnpoint.getYaw(), spawnpoint.getPitch()));
 
         }
     }
@@ -267,11 +277,22 @@ public class RedLightGreenLight extends Game {
     public void queueGameStart() {
         placeBarriers();
 
-        broadcastTitleToAllPlayers(Component.text("Game starts in " + timeBeforeStart + " seconds!", NamedTextColor.RED), Component.text("", NamedTextColor.RED));
+        initScoreboard();
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>Game starts in 3..."), (timeBeforeStart * 20) - 60);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>2..."), (timeBeforeStart * 20) - 40);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>1..."), (timeBeforeStart * 20) - 20);
+        broadcastMessageToAllPlayers("<green><bold>Game starts in " + timeBeforeStart + " seconds!");
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            broadcastTitleToAllPlayers(Component.text("3", NamedTextColor.GOLD, TextDecoration.BOLD), Component.text(""), Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO);
+            playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+        }, (timeBeforeStart * 20) - 60);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            broadcastTitleToAllPlayers(Component.text("2", NamedTextColor.GOLD, TextDecoration.BOLD), Component.text(""), Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO);
+            playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+        }, (timeBeforeStart * 20) - 40);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            broadcastTitleToAllPlayers(Component.text("1", NamedTextColor.GOLD, TextDecoration.BOLD), Component.text(""), Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO);
+            playSoundToAllPlayers(Sound.BLOCK_NOTE_BLOCK_HARP, 1.0f, 1.0f);
+        }, (timeBeforeStart * 20) - 20);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             removeBarriers();
@@ -279,6 +300,11 @@ public class RedLightGreenLight extends Game {
             Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
         }, (timeBeforeStart * 20));
 
+    }
+
+    public void updateScoreboardDot() {
+        scoreboardLightStatus.prefix(Component.text("⬛⬛⬛⬛⬛", redLight ? NamedTextColor.RED : NamedTextColor.GREEN, TextDecoration.BOLD));
+        scoreboardLightStatus.suffix(Component.text("⬛⬛⬛⬛⬛", redLight ? NamedTextColor.RED : NamedTextColor.GREEN, TextDecoration.BOLD));
     }
 
     public void placeBarriers() {
@@ -318,8 +344,49 @@ public class RedLightGreenLight extends Game {
         player.crossed = true;
         player.timeCrossed = gameDuration - gameCountdown;
 
-        player.player.showTitle(Title.title(Component.text("You crossed!", NamedTextColor.GREEN), Component.text("")));
+        updatePlayerLine(player);
 
+    }
+
+    public void initScoreboard() {
+        createScoreboardWithTimer(PRETTY_TITLE);
+//
+//        scoreboardLightStatus = createScoreboardLine(scoreboard, scoreboardObjective, "2", 2, false);
+//        scoreboardLightStatus.prefix(Component.text("§3", NamedTextColor.GOLD));
+//        scoreboardLightStatus.suffix(Component.text("•", NamedTextColor.GRAY, TextDecoration.BOLD));
+//
+//        Team emptyLine = createScoreboardLine(scoreboard, scoreboardObjective, "1", 1, false);
+//        emptyLine.prefix(Component.text("§3"));
+//        emptyLine.suffix(Component.text("§3"));
+
+        for (int i = 0; i < participants.size(); i++) {
+            Player player = participants.get(i);
+
+            Team playerLine = createScoreboardLine(scoreboard, scoreboardObjective, "" + i, -i, false);
+            playerLines.put(player, playerLine);
+
+            playerLine.prefix(Component.text(player.getName() + ": "));
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+
+        }
+
+    }
+
+    public void updatePlayerLine(RedLightGreenLightPlayer player) {
+
+        Team playerLine = playerLines.get(player.player);
+
+        if (player.crossed) {
+            playerLine.suffix(Component.text("⭐", NamedTextColor.GOLD, TextDecoration.BOLD));
+        } else if (player.eliminated) {
+            playerLine.suffix(Component.text("✘", NamedTextColor.RED, TextDecoration.BOLD));
+        } else {
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+        }
+    }
+
+    public void cleanup() {
+        removeScoreboard();
     }
 
 }

@@ -46,7 +46,6 @@ public class HideAndSeek extends Game {
     public List<HideAndSeekPlayer> seekers = new ArrayList<HideAndSeekPlayer>();
 
     public Location mapLoc;
-    public Location leaderboardLoc, firstPlaceLoc, secondPlaceLoc, thirdPlaceLoc;
 
     public boolean seekersSpawnedIn = false;
 
@@ -55,13 +54,8 @@ public class HideAndSeek extends Game {
     public final int TOTAL_GAME_TIME_SECONDS = 300;
 
     public HideAndSeek(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 183, 193, 1053, 90, 0), plugin, host, 2);
+        super(new Location(plugin.getServer().getWorld("squidgame"), 183, 266, 1053, 90, 0), plugin, host, 2);
         this.mapLoc = new Location(spawnpoint.getWorld(), 247.5, 227, 994.5, -90, 0);
-        this.leaderboardLoc = new Location(spawnpoint.getWorld(), 185, 191, 1119, 180, 0);
-        this.firstPlaceLoc = new Location(spawnpoint.getWorld(), 185, 193, 1110, 0, 0);
-        this.secondPlaceLoc = new Location(spawnpoint.getWorld(), 183, 192, 1110, 180, 0);
-        this.thirdPlaceLoc = new Location(spawnpoint.getWorld(), 187, 191, 1110, 180, 0);
-        this.PRETTY_TITLE = "Hide and Seek";
     }
 
     public void timer() {
@@ -89,7 +83,6 @@ public class HideAndSeek extends Game {
             Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
 
         } else {
-            showNameTags();
             goToLeaderboard();
         }
 
@@ -121,9 +114,6 @@ public class HideAndSeek extends Game {
     }
 
     public void goToLeaderboard() {
-        removeKeyChests();
-        closeOpenedDoors();
-
         givePointsToRemainingHiders();
 
         List<HideAndSeekPlayer> finalResults = sortPlayersByPoints();
@@ -591,6 +581,12 @@ public class HideAndSeek extends Game {
 
             player.sendRichMessage("<green>This door has been unlocked!");
         }
+    }
+
+    public void cleanup() {
+        removeKeyChests();
+        closeOpenedDoors();
+        showNameTags();
     }
 
 }

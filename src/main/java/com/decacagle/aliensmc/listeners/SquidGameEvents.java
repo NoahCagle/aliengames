@@ -180,6 +180,18 @@ public class SquidGameEvents implements Listener {
                     }
                 }
             }
+        } else if (gameManager.getCurrentGame() instanceof RedLightGreenLight rlgl) {
+            if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
+                if (Globals.playerInList(attacker, rlgl.participants) && Globals.playerInList(defender, rlgl.participants)) {
+                    event.setCancelled(true);
+                }
+            }
+        } else if (gameManager.getCurrentGame() instanceof GlassBridge gb) {
+            if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
+                if (Globals.playerInList(attacker, gb.participants) && Globals.playerInList(defender, gb.participants)) {
+                    event.setCancelled(true);
+                }
+            }
         }
     }
 
@@ -264,6 +276,12 @@ public class SquidGameEvents implements Listener {
         } else if (currentGame instanceof GlassBridge gb) {
             if (event.getEntity() instanceof Player player) {
                 if (Globals.playerInList(player, gb.participants)) {
+                    event.setCancelled(true);
+                }
+            }
+        } else if (currentGame instanceof RedLightGreenLight rlgl) {
+            if (event.getEntity() instanceof Player player) {
+                if (Globals.playerInList(player, rlgl.participants)) {
                     event.setCancelled(true);
                 }
             }

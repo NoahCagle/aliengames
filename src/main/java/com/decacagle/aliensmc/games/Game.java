@@ -1,18 +1,28 @@
 package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
+import com.decacagle.aliensmc.utilities.Globals;
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.*;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Game {
+
+    private Team timerLine;
+    public Scoreboard scoreboard;
+    public Objective scoreboardObjective;
+    public Map<Player, Team> playerLines = new HashMap<>();
 
     public World world;
     public List<Player> participants = new ArrayList<Player>();
@@ -35,14 +45,6 @@ public class Game {
         this.plugin = plugin;
 
         addParticipant(host);
-    }
-
-    public void nextStep() {
-
-    }
-
-    public void determineParticipants() {
-
     }
 
     public void endGame() {
@@ -77,18 +79,76 @@ public class Game {
         }
     }
 
+    public void playSoundToAllPlayers(Sound sound, float volume, float pitch) {
+        for (Player p : participants) {
+            p.playSound(p, sound, volume, pitch);
+        }
+    }
+
     public void addParticipant(Player player) {
         participants.add(player);
         player.teleport(spawnpoint);
         player.setGameMode(GameMode.ADVENTURE);
+        broadcastMessageToAllPlayers("<green>" + player.getName() + " has joined the game!");
+    }
+
+    public void cleanup() {
+
     }
 
     public void reportPlayerDisconnect(Player player) {
 
     }
 
-    public void forceGameEnd() {
+    public void healAll() {
+        for (Player p : participants) {
+            p.setHealth(20);
+            p.setFoodLevel(20);
+        }
+    }
 
+    public void updateTimer(Component prefix, int seconds) {
+        timerLine.prefix(prefix);
+        timerLine.suffix(Component.text(Globals.secondsToFormattedTime(seconds)));
+    }
+
+    public void createScoreboardWithTimer(String title) {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        this.scoreboard = manager.getNewScoreboard();
+
+        this.scoreboardObjective = scoreboard.registerNewObjective("game", Criteria.DUMMY, Component.text(title, NamedTextColor.GOLD, TextDecoration.BOLD, TextDecoration.UNDERLINED));
+        scoreboardObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        this.timerLine = createScoreboardLine(scoreboard, scoreboardObjective, "10", 10, false);
+        timerLine.prefix(Component.text(" --"));
+        timerLine.suffix(Component.text("-- "));
+
+        for (Player p : participants) {
+            p.setScoreboard(scoreboard);
+        }
+
+    }
+
+    public Team createScoreboardLine(Scoreboard board, Objective obj, String key, int score, boolean keyVisible) {
+        Team team = board.registerNewTeam("line_" + score);
+        String invisiKey = "§" + key;
+        team.addEntry(keyVisible ? key : invisiKey);
+        obj.getScore(keyVisible ? key : invisiKey).setScore(score);
+        obj.getScore(keyVisible ? key : invisiKey).numberFormat(NumberFormat.blank());
+        return team;
+    }
+
+    public void initScoreboard() {
+
+    }
+
+    public void removeScoreboard() {
+        scoreboardObjective.unregister();
+
+        Scoreboard empty = Bukkit.getScoreboardManager().getNewScoreboard();
+        for (Player p : participants) {
+            p.setScoreboard(empty);
+        }
     }
 
 }

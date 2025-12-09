@@ -9,29 +9,21 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Barrel;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 // TODO: clean this shit up what the fuck have i done here...
 public class GamesCommand implements BasicCommand {
 
+    private final String ADMIN_PERMS = "aliensgames.agames.admin";
+
     private GameManager gameManager;
     private AliensGames plugin;
-
-    private boolean showingKeyLocs = false;
 
     public GamesCommand(AliensGames plugin, GameManager gameManager) {
         this.gameManager = gameManager;
@@ -40,147 +32,133 @@ public class GamesCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack commandSourceStack, String[] args) {
-        if (args.length >= 2) {
+        CommandSender sender = commandSourceStack.getSender();
+
+        if (args.length == 0) {
+            sendAllCommandsList(sender);
+        } else {
             if (args[0].equalsIgnoreCase("host")) {
-                if (gameManager.getCurrentGame() != null) {
-                    commandSourceStack.getSender().sendRichMessage("<red><bold>There is already a game running!");
-                } else {
-                    if (commandSourceStack.getSender() instanceof Player host) {
+                if (sender instanceof Player host) {
+                    if (args.length >= 2) {
                         if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
-                            gameManager.prepareGame(new RedLightGreenLight(plugin, host));
-                            host.sendRichMessage("Preparing to play " + RedLightGreenLight.PRETTY_TITLE);
-                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
-//                            host.sendRichMessage("<red>Red Light Green Light is under construction!");
-//                            host.sendRichMessage("<red>sowwy... :(");
+                            hostGame(new RedLightGreenLight(plugin, host));
                         } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
-                            gameManager.prepareGame(new HideAndSeek(plugin, host));
-                            host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
-                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                            hostGame(new HideAndSeek(plugin, host));
                         } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
-                            gameManager.prepareGame(new GlassBridge(plugin, host));
-                            host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
-                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                            hostGame(new GlassBridge(plugin, host));
                         } else {
-                            host.sendRichMessage("<gold><bold>Hostable Games:");
-                            host.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
-                            host.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
-                            host.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
+                            sendHostableGamesMessage(host);
                         }
                     } else {
-                        commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");
+                        sendHostableGamesMessage(host);
                     }
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can play games!");
                 }
-            }
-        } else if (args.length == 1) {
-            if (commandSourceStack.getSender() instanceof Player sender) {
-                if (args[0].equalsIgnoreCase("start")) {
-                    if (gameManager.getCurrentGame() != null) {
-                        Game currentGame = gameManager.getCurrentGame();
-                        if (sender.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
+            } else if (args[0].equalsIgnoreCase("start")) {
+                if (sender instanceof Player player) {
+                    Game currentGame = gameManager.getCurrentGame();
+                    if (currentGame != null) {
+                        if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                             if (!currentGame.gameRunning) {
-                                commandSourceStack.getSender().sendRichMessage("<green>Starting active game!");
-                                gameManager.getCurrentGame().startGame();
+//                                if (currentGame.participants.size() >= currentGame.minPlayers) {
+                                    sender.sendRichMessage("<green><bold>Starting the game!");
+                                    gameManager.getCurrentGame().startGame();
+//                                } else {
+//                                    sender.sendRichMessage("<red><bold>There are not enough players to start yet!");
+//                                    sender.sendRichMessage("<red><bold>This game requires a minimum of " + currentGame.minPlayers + " players!");
+//                                    sender.sendRichMessage("<red><bold>You only have " + currentGame.participants.size() + " players!");
+//                                }
                             } else {
-                                commandSourceStack.getSender().sendRichMessage("<red>The game has already been started!");
+                                player.sendRichMessage("<red><bold>The game has already started!");
                             }
                         } else {
-                            sender.sendRichMessage("<red><bold>You are not the host of this game!");
-                            sender.sendRichMessage("<red>" + currentGame.host.getName() + " is the host of this game!");
+                            player.sendRichMessage("<red><bold>You are not the host of this game!");
                         }
                     } else {
-                        sender.sendRichMessage("<red>There is no active game!");
+                        sender.sendRichMessage("<red><bold>There is no active game!");
                     }
-                } else if (args[0].equalsIgnoreCase("join")) {
-                    if (gameManager.getCurrentGame() != null) {
-                        if (!Globals.playerInList(sender, gameManager.getCurrentGame().participants)) {
-                            gameManager.getCurrentGame().addParticipant(sender);
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can play games!");
+                }
+            } else if (args[0].equalsIgnoreCase("join")) {
+                if (sender instanceof Player player) {
+                    Game currentGame = gameManager.getCurrentGame();
+                    if (currentGame != null) {
+                        if (!currentGame.gameRunning) {
+                            if (!Globals.playerInList(player, currentGame.participants)) {
+                                currentGame.addParticipant(player);
+                            } else {
+                                player.sendRichMessage("<red><bold>You are already in this game!");
+                            }
                         } else {
-                            sender.sendRichMessage("<red>You've already joined this game!");
+                            player.sendRichMessage("<red><bold>The game has already started!");
                         }
                     } else {
-                        sender.sendRichMessage("<red>There is no active game!");
+                        player.sendRichMessage("<red><bold>There is no active game!");
                     }
-                } else if (args[0].equalsIgnoreCase("host")) {
-                    sender.sendRichMessage("<gold><bold>Hostable Games:");
-                    sender.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
-                    sender.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
-                    sender.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
-                } else if (args[0].equalsIgnoreCase("keylocs")) {
-                    World world = plugin.getServer().getWorld("squidgame");
-
-                    showingKeyLocs = !showingKeyLocs;
-
-                    commandSourceStack.getSender().sendRichMessage(showingKeyLocs ? "Showing key locations!" : "Hiding key locations!");
-
-                    for (Vector v : HideAndSeek.KEY_LOCATIONS) {
-                        Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
-                        world.setBlockData((int) v.getX(), (int) v.getY(), (int) v.getZ(), mat.createBlockData());
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can play games!");
+                }
+            } else if (args[0].equalsIgnoreCase("admin")) {
+                if (sender.hasPermission(ADMIN_PERMS)) {
+                    if (args.length >= 2) {
+                        if (args[1].equalsIgnoreCase("forcestop")) {
+                            gameManager.forceStop();
+                        }
+                    } else {
+                        sendAdminCommandsList(sender);
                     }
-
-                } else if (args[0].equalsIgnoreCase("keychest")) {
-                    sender.sendRichMessage("<gold>Placing key chest!");
-                    placeKeyChest(sender);
+                } else {
+                    sender.sendRichMessage("<red>You don't have access to that command!");
                 }
-            } else if (args[0].equalsIgnoreCase("keylocs")) {
-                World world = plugin.getServer().getWorld("squidgame");
-
-                showingKeyLocs = !showingKeyLocs;
-
-                commandSourceStack.getSender().sendRichMessage(showingKeyLocs ? "Showing key locations!" : "Hiding key locations!");
-
-                for (Vector v : HideAndSeek.KEY_LOCATIONS) {
-                    Material mat = (showingKeyLocs ? Material.GLOWSTONE : Material.SNOW);
-                    world.setBlockData((int) v.getX(), (int) v.getY(), (int) v.getZ(), mat.createBlockData());
-                }
-
-            } else {
-                commandSourceStack.getSender().sendRichMessage("<red><bold>Only players can play games!");
             }
-        } else if (args.length == 0) {
-            // send list of command options
         }
 
     }
 
-    public void placeKeyChest(Player player) {
-        ItemStack key = getPurpleKey();
-        if (key == null) {
-            plugin.getLogger().warning("Key item is null");
-        } else if (key.getType() == Material.AIR) {
-            plugin.getLogger().warning("Key item is AIR!");
+    @Override
+    public @NotNull Collection<String> suggest(@NotNull CommandSourceStack stack, @NotNull String @NotNull [] args) {
+
+        if (args.length == 1) {
+            List<String> completions = new ArrayList<String>();
+            completions.add("host");
+            completions.add("join");
+            completions.add("start");
+            if (stack.getSender().hasPermission(ADMIN_PERMS)) {
+                completions.add("admin");
+            }
+            return completions;
+        } else if (args.length >= 2) {
+            if (args[0].equalsIgnoreCase("host"))
+                return List.of("rlgl", "hns", "gb");
+            else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
+                return List.of("forcestop");
+            }
         }
 
-        Location loc = player.getLocation().subtract(1, 0, 0);
+        return List.of();
+    }
 
-        Block b = loc.getBlock();
+    public void sendHostableGamesMessage(Player player) {
+        player.sendRichMessage("<gold><bold>Hostable Games:");
+        player.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
+        player.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
+        player.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
+    }
 
-        b.setType(Material.CHEST);
-
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            BlockState state = b.getState();
-            if (key == null) {
-                plugin.getLogger().warning("Key item is null");
-            } else if (key.getType() == Material.AIR) {
-                plugin.getLogger().warning("Key item is AIR!");
-            }
-            if (state instanceof Chest chest) {
-                plugin.logger.info("State is a barrel!");
-                chest.getBlockInventory().setItem(13, key);
-                player.getInventory().setItem(2, key);
-            } else plugin.logger.info("State is NOT a barrel!");
-        }, 60);
+    public void sendAdminCommandsList(CommandSender sender) {
 
     }
 
-    public ItemStack getPurpleKey() {
-        ItemStack purpleKey = new ItemStack(Globals.PURPLE_KEY_TYPE);
-        ItemMeta purpleMeta = purpleKey.getItemMeta();
+    public void sendAllCommandsList(CommandSender sender) {
 
-        purpleMeta.displayName(Component.text(Globals.PURPLE_KEY_NAME)
-                .color(NamedTextColor.LIGHT_PURPLE)
-                .decoration(TextDecoration.ITALIC, false));
-        purpleKey.setItemMeta(purpleMeta);
-
-        return purpleKey;
     }
+
+    public void hostGame(Game game) {
+        gameManager.prepareGame(game);
+        game.host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
+        game.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+    }
+
 }

@@ -5,7 +5,7 @@ import com.decacagle.aliensmc.games.Game;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
 
 public class GameManager {
 
@@ -45,6 +45,18 @@ public class GameManager {
 
         plugin.getServer().broadcast(announceMessage);
 
+    }
+
+    public void forceStop() {
+        if (currentGame != null) {
+            for (Player p : currentGame.participants) {
+                p.teleport(currentGame.spawnpoint);
+                p.sendRichMessage("<red>The game has been forcefully terminated by an administrator.");
+            }
+            currentGame.gameRunning = false;
+            currentGame.cleanup();
+            currentGame = null;
+        }
     }
 
 }
