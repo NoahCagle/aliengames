@@ -119,7 +119,7 @@ public class Game {
         this.scoreboardObjective = scoreboard.registerNewObjective("game", Criteria.DUMMY, Component.text(title, NamedTextColor.GOLD, TextDecoration.BOLD, TextDecoration.UNDERLINED));
         scoreboardObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        this.timerLine = createScoreboardLine(scoreboard, scoreboardObjective, "10", 10, false);
+        this.timerLine = createScoreboardLine(scoreboard, scoreboardObjective, "9", 10, false);
         timerLine.prefix(Component.text(" --"));
         timerLine.suffix(Component.text("-- "));
 

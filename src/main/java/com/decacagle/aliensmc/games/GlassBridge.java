@@ -12,6 +12,7 @@ import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Team;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,10 @@ public class GlassBridge extends Game {
             gameRunning = false;
         }
 
+        if (secondsPassed % 1 == 0) {
+            updateTimer(Component.text("Time Remaining: "), TOTAL_GAME_TIME_SECONDS - ((int) secondsPassed));
+        }
+
         checkPlayerPositions();
         checkGameStatus();
 
@@ -79,8 +84,8 @@ public class GlassBridge extends Game {
     public void endGame() {
         if (gameRunning) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> bombBridge(), 60);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> goToLeaderboard(), 124);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 130);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> goToLeaderboard(), 124*2);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 130*2);
 
             gameRunning = false;
         }
@@ -156,6 +161,7 @@ public class GlassBridge extends Game {
                     if (p.player.getZ() >= 1284) {
                         p.crossed = true;
                         p.timeCrossed = (int) secondsPassed;
+                        updatePlayerLine(p);
                     }
                 }
             } else {
@@ -225,6 +231,7 @@ public class GlassBridge extends Game {
         healAll();
         initBridge();
         initPlayers();
+        initScoreboard();
 
         gameRunning = true;
         Bukkit.getScheduler().runTaskLater(plugin, this::timer, GAME_LOOP);
@@ -310,6 +317,8 @@ public class GlassBridge extends Game {
 
                 p.player.showTitle(Title.title(title, subtitle));
 
+                updatePlayerLine(p);
+
                 if (!p.takenFirstLeap) p.takenFirstLeap = true;
 
                 Bukkit.getScheduler().runTaskLater(plugin, () -> p.player.teleport(vipLoungeSpawnpoint), 10); // wont teleport immediately for whatever reason, so im adding a half second delay
@@ -328,8 +337,46 @@ public class GlassBridge extends Game {
         return ret;
     }
 
+    public void initScoreboard() {
+        createScoreboardWithTimer(PRETTY_TITLE);
+//
+//        scoreboardLightStatus = createScoreboardLine(scoreboard, scoreboardObjective, "2", 2, false);
+//        scoreboardLightStatus.prefix(Component.text("§3", NamedTextColor.GOLD));
+//        scoreboardLightStatus.suffix(Component.text("•", NamedTextColor.GRAY, TextDecoration.BOLD));
+//
+//        Team emptyLine = createScoreboardLine(scoreboard, scoreboardObjective, "1", 1, false);
+//        emptyLine.prefix(Component.text("§3"));
+//        emptyLine.suffix(Component.text("§3"));
+
+        for (int i = 0; i < participants.size(); i++) {
+            Player player = participants.get(i);
+
+            Team playerLine = createScoreboardLine(scoreboard, scoreboardObjective, "" + i, -i, false);
+            playerLines.put(player, playerLine);
+
+            playerLine.prefix(Component.text(player.getName() + ": "));
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+
+        }
+
+    }
+
+    public void updatePlayerLine(GlassBridgePlayer player) {
+
+        Team playerLine = playerLines.get(player.player);
+
+        if (player.crossed) {
+            playerLine.suffix(Component.text("⭐", NamedTextColor.GOLD, TextDecoration.BOLD));
+        } else if (player.eliminated) {
+            playerLine.suffix(Component.text("✘", NamedTextColor.RED, TextDecoration.BOLD));
+        } else {
+            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+        }
+    }
+
     public void cleanup() {
         replaceBridge();
+        removeScoreboard();
     }
 
 }

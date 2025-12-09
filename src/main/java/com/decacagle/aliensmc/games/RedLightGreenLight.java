@@ -103,7 +103,7 @@ public class RedLightGreenLight extends Game {
 
             gameCountdown--;
 
-            updateTimer(Component.text("Time: "), gameCountdown);
+            updateTimer(Component.text("Time Remaining: "), gameCountdown);
 
             checkGameStatus();
 
@@ -116,8 +116,12 @@ public class RedLightGreenLight extends Game {
             plugin.logger.info("game still running, checking status");
             for (RedLightGreenLightPlayer p : players) {
                 if (!p.crossed && !p.eliminated) {
-                    if (p.player.getZ() <= LINE_Z) {
-                        registerPlayerCrossing(p);
+                    checkIfCrossed(p);
+
+                    // Look, i know this is disgusting
+                    // but this is probably a better way to check for player crossing more frequently, without ramping up the loop speed like ive done before
+                    for (int i = 1; i <= 3; i++) {
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> checkIfCrossed(p), i * 5);
                     }
                 }
             }
@@ -132,6 +136,12 @@ public class RedLightGreenLight extends Game {
                 endGame();
             }
 
+        }
+    }
+
+    public void checkIfCrossed(RedLightGreenLightPlayer player) {
+        if (player.player.getZ() <= LINE_Z) {
+            registerPlayerCrossing(player);
         }
     }
 
