@@ -9,8 +9,12 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -21,6 +25,8 @@ import java.util.List;
 public class GamesCommand implements BasicCommand {
 
     private final String ADMIN_PERMS = "aliensgames.agames.admin";
+
+    private boolean showingKeyLocs = false;
 
     private GameManager gameManager;
     private AliensGames plugin;
@@ -40,20 +46,24 @@ public class GamesCommand implements BasicCommand {
             if (args[0].equalsIgnoreCase("host")) {
                 if (sender instanceof Player host) {
                     if (args.length >= 2) {
-                        if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
-                            hostGame(new RedLightGreenLight(plugin, host));
-                        } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
-                            hostGame(new HideAndSeek(plugin, host));
-                        } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
-                            hostGame(new GlassBridge(plugin, host));
+                        if (gameManager.getCurrentGame() == null) {
+                            if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
+                                hostGame(new RedLightGreenLight(plugin, host));
+                            } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
+                                hostGame(new HideAndSeek(plugin, host));
+                            } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
+                                hostGame(new GlassBridge(plugin, host));
+                            } else {
+                                sendHostableGamesMessage(host);
+                            }
                         } else {
-                            sendHostableGamesMessage(host);
+                            host.sendRichMessage("<red><bold>There is already a game being played right now!");
                         }
                     } else {
                         sendHostableGamesMessage(host);
                     }
                 } else {
-                    sender.sendRichMessage("<red><bold>Only players can play games!");
+                    sender.sendRichMessage("<red><bold>Only players can play mini-game!");
                 }
             } else if (args[0].equalsIgnoreCase("start")) {
                 if (sender instanceof Player player) {
@@ -62,24 +72,25 @@ public class GamesCommand implements BasicCommand {
                         if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                             if (!currentGame.gameRunning) {
 //                                if (currentGame.participants.size() >= currentGame.minPlayers) {
-                                    sender.sendRichMessage("<green><bold>Starting the game!");
-                                    gameManager.getCurrentGame().startGame();
+                                sender.sendRichMessage("<green><bold>Starting the mini-game!");
+                                gameManager.getCurrentGame().startGame();
 //                                } else {
 //                                    sender.sendRichMessage("<red><bold>There are not enough players to start yet!");
-//                                    sender.sendRichMessage("<red><bold>This game requires a minimum of " + currentGame.minPlayers + " players!");
+//                                    sender.sendRichMessage("<red><bold>This mini-game requires a minimum of " + currentGame.minPlayers + " players!");
 //                                    sender.sendRichMessage("<red><bold>You only have " + currentGame.participants.size() + " players!");
 //                                }
                             } else {
-                                player.sendRichMessage("<red><bold>The game has already started!");
+                                player.sendRichMessage("<red><bold>The game has already mini-game!");
                             }
                         } else {
-                            player.sendRichMessage("<red><bold>You are not the host of this game!");
+                            player.sendRichMessage("<red><bold>You are not the host of this mini-game!");
+                            player.sendRichMessage("<red><bold>" + currentGame.host.getName() + " is the host of this mini-game!");
                         }
                     } else {
-                        sender.sendRichMessage("<red><bold>There is no active game!");
+                        sender.sendRichMessage("<red><bold>There is no active mini-game!");
                     }
                 } else {
-                    sender.sendRichMessage("<red><bold>Only players can play games!");
+                    sender.sendRichMessage("<red><bold>Only players can play mini-games!");
                 }
             } else if (args[0].equalsIgnoreCase("join")) {
                 if (sender instanceof Player player) {
@@ -89,22 +100,86 @@ public class GamesCommand implements BasicCommand {
                             if (!Globals.playerInList(player, currentGame.participants)) {
                                 currentGame.addParticipant(player);
                             } else {
-                                player.sendRichMessage("<red><bold>You are already in this game!");
+                                player.sendRichMessage("<red><bold>You are already in this mini-game!");
                             }
                         } else {
-                            player.sendRichMessage("<red><bold>The game has already started!");
+                            player.sendRichMessage("<red><bold>The mini-game has already started!");
                         }
                     } else {
-                        player.sendRichMessage("<red><bold>There is no active game!");
+                        player.sendRichMessage("<red><bold>There is no active mini-game!");
                     }
                 } else {
-                    sender.sendRichMessage("<red><bold>Only players can play games!");
+                    sender.sendRichMessage("<red><bold>Only players can play mini-games!");
                 }
+            } else if (args[0].equalsIgnoreCase("leave")) {
+                if (sender instanceof Player player) {
+                    Game currentGame = gameManager.getCurrentGame();
+                    if (currentGame != null) {
+
+                        if (Globals.playerInList(player, currentGame.participants)) {
+
+                            currentGame.reportPlayerDeparture(player);
+
+                            if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
+                                gameManager.reportHostDisconnect();
+                            }
+
+                        } else {
+                            player.sendRichMessage("<red><bold>You haven't joined the current mini-game!");
+                        }
+
+                    } else {
+                        player.sendRichMessage("<red><bold>There is no active mini-game!");
+                    }
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can play mini-games!");
+                }
+            } else if (args[0].equalsIgnoreCase("cancel")) {
+
+                if (sender instanceof Player player) {
+                    Game currentGame = gameManager.getCurrentGame();
+
+                    if (currentGame != null) {
+
+                        if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
+
+                            if (!currentGame.gameRunning) {
+                                gameManager.hostCancel();
+                            } else {
+                                player.sendRichMessage("<red><bold>This mini-game has already started!");
+                                player.sendRichMessage("<yellow>If you'd like to leave this mini-game, you can do so with the <bold>/agames leave</bold> command!");
+                            }
+
+                        } else {
+                            player.sendRichMessage("<red><bold>You are not the host of this mini-game!");
+                            player.sendRichMessage("<red><bold>" + currentGame.host.getName() + " is the host of this mini-game!");
+                            player.sendRichMessage("<yellow>If you'd like to leave this mini-game, you can do so with the <bold>/agames leave</bold> command!");
+                        }
+
+                    } else {
+                        player.sendRichMessage("<red><bold>There is no active mini-game!");
+                    }
+
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can play mini-games!");
+                }
+
             } else if (args[0].equalsIgnoreCase("admin")) {
                 if (sender.hasPermission(ADMIN_PERMS)) {
                     if (args.length >= 2) {
                         if (args[1].equalsIgnoreCase("forcestop")) {
                             gameManager.forceStop();
+                        } else if (args[1].equalsIgnoreCase("keylocs")) {
+                            showingKeyLocs = !showingKeyLocs;
+
+                            if (showingKeyLocs) {
+                                showKeyLocations();
+                                sender.sendRichMessage("<yellow>Showing hide and seek key locations!");
+                            } else {
+                                hideKeyLocations();
+                                sender.sendRichMessage("<yellow>Hiding hide and seek key locations!");
+                            }
+
                         }
                     } else {
                         sendAdminCommandsList(sender);
@@ -133,7 +208,7 @@ public class GamesCommand implements BasicCommand {
             if (args[0].equalsIgnoreCase("host"))
                 return List.of("rlgl", "hns", "gb");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
-                return List.of("forcestop");
+                return List.of("forcestop", "keylocs");
             }
         }
 
@@ -141,7 +216,7 @@ public class GamesCommand implements BasicCommand {
     }
 
     public void sendHostableGamesMessage(Player player) {
-        player.sendRichMessage("<gold><bold>Hostable Games:");
+        player.sendRichMessage("<gold><bold>Hostable Mini-Games:");
         player.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
         player.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
         player.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
@@ -153,6 +228,22 @@ public class GamesCommand implements BasicCommand {
 
     public void sendAllCommandsList(CommandSender sender) {
 
+    }
+
+    public void showKeyLocations() {
+        World world = plugin.getServer().getWorld("squidgame");
+        for (Vector vec : HideAndSeek.KEY_LOCATIONS) {
+            Location loc = new Location(world, vec.getX(), vec.getY(), vec.getZ());
+            loc.getBlock().setType(Material.GLOWSTONE);
+        }
+    }
+
+    public void hideKeyLocations() {
+        World world = plugin.getServer().getWorld("squidgame");
+        for (Vector vec : HideAndSeek.KEY_LOCATIONS) {
+            Location loc = new Location(world, vec.getX(), vec.getY(), vec.getZ());
+            loc.getBlock().setType(Material.SNOW);
+        }
     }
 
     public void hostGame(Game game) {

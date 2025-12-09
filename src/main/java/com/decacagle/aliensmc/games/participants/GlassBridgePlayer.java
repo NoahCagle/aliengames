@@ -10,6 +10,8 @@ public class GlassBridgePlayer {
     public boolean crossed = false;
     public int timeCrossed = -1;
 
+    public boolean connected = true;
+
     public boolean takenFirstLeap = false;
 
     public int points = 0;

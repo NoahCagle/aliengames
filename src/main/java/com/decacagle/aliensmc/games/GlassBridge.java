@@ -3,6 +3,7 @@ package com.decacagle.aliensmc.games;
 import com.decacagle.aliensmc.AliensGames;
 import com.decacagle.aliensmc.games.blocks.GlassBridgeSpace;
 import com.decacagle.aliensmc.games.participants.GlassBridgePlayer;
+import com.decacagle.aliensmc.games.participants.RedLightGreenLightPlayer;
 import com.decacagle.aliensmc.utilities.Globals;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -170,6 +171,9 @@ public class GlassBridge extends Game {
                         p.player.teleport(bridgeSpawnpoint);
                         p.player.setGameMode(GameMode.ADVENTURE);
                     }
+                } else if (!p.takenFirstLeap) {
+                    p.player.teleport(bridgeSpawnpoint);
+                    p.player.setGameMode(GameMode.ADVENTURE);
                 }
             }
         }
@@ -374,11 +378,57 @@ public class GlassBridge extends Game {
         } else {
             playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
         }
+
+        if (!player.connected) {
+            playerLine.prefix(Component.text(player.player.getName() + ": ", NamedTextColor.DARK_GRAY));
+        }
+
     }
 
     public void cleanup() {
         replaceBridge();
         removeScoreboard();
+    }
+
+    public void reportPlayerDeparture(Player player) {
+        participants.remove(player);
+        removeFromScoreboard(player);
+
+        player.teleport(world.getSpawnLocation());
+
+        if (gameRunning) {
+
+            GlassBridgePlayer gbPlayer = null;
+
+            for (GlassBridgePlayer p : players) {
+                if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+                    gbPlayer = p;
+                    players.remove(p);
+                    break;
+                }
+            }
+
+            if (gbPlayer != null) {
+
+                gbPlayer.eliminated = true;
+                gbPlayer.takenFirstLeap = true;
+                gbPlayer.connected = false;
+                gbPlayer.points = 0;
+
+                updatePlayerLine(gbPlayer);
+
+            } else {
+                plugin.logger.severe("Tried to find " + player.getName() + " for a departure report, but couldn't find them!");
+            }
+
+        }
+
+        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
+
+        if (participants.isEmpty()) {
+            plugin.gameManager.forceStop();
+        }
+
     }
 
 }

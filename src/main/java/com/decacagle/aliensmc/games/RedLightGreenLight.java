@@ -1,6 +1,7 @@
 package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
+import com.decacagle.aliensmc.games.participants.HideAndSeekPlayer;
 import com.decacagle.aliensmc.games.participants.RedLightGreenLightPlayer;
 import com.decacagle.aliensmc.utilities.Globals;
 import net.kyori.adventure.text.Component;
@@ -394,10 +395,55 @@ public class RedLightGreenLight extends Game {
         } else {
             playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
         }
+
+        if (!player.connected) {
+            playerLine.prefix(Component.text(player.player.getName() + ": ", NamedTextColor.DARK_GRAY));
+        }
+
     }
 
     public void cleanup() {
         removeScoreboard();
+    }
+
+    public void reportPlayerDeparture(Player player) {
+        participants.remove(player);
+        removeFromScoreboard(player);
+
+        player.teleport(world.getSpawnLocation());
+
+        if (gameRunning) {
+
+            RedLightGreenLightPlayer rlglPlayer = null;
+
+            for (RedLightGreenLightPlayer p : players) {
+                if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+                    rlglPlayer = p;
+                    players.remove(p);
+                    break;
+                }
+            }
+
+            if (rlglPlayer != null) {
+
+                rlglPlayer.eliminated = true;
+                rlglPlayer.connected = false;
+                rlglPlayer.points = 0;
+
+                updatePlayerLine(rlglPlayer);
+
+            } else {
+                plugin.logger.severe("Tried to find " + player.getName() + " for a departure report, but couldn't find them!");
+            }
+
+        }
+
+        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
+
+        if (participants.isEmpty()) {
+            plugin.gameManager.forceStop();
+        }
+
     }
 
 }

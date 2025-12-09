@@ -10,6 +10,9 @@ public class HideAndSeekPlayer {
     public Player player;
     public boolean eliminated = false;
     public boolean escaped = false;
+
+    public boolean connected = true;
+
     public int escapeTime = 0;
     public int kills = 0;
     public boolean seeker;

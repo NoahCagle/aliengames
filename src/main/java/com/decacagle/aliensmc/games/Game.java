@@ -26,6 +26,7 @@ public class Game {
 
     public World world;
     public List<Player> participants = new ArrayList<Player>();
+    public List<Player> spectators = new ArrayList<Player>();
 
     public Location spawnpoint;
     public AliensGames plugin;
@@ -89,7 +90,7 @@ public class Game {
         participants.add(player);
         player.teleport(spawnpoint);
         player.setGameMode(GameMode.ADVENTURE);
-        broadcastMessageToAllPlayers("<green>" + player.getName() + " has joined the game!");
+        broadcastMessageToAllPlayers("<green>" + player.getName() + " has joined your mini-game!");
     }
 
     public void cleanup() {
@@ -116,7 +117,7 @@ public class Game {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         this.scoreboard = manager.getNewScoreboard();
 
-        this.scoreboardObjective = scoreboard.registerNewObjective("game", Criteria.DUMMY, Component.text(title, NamedTextColor.GOLD, TextDecoration.BOLD, TextDecoration.UNDERLINED));
+        this.scoreboardObjective = scoreboard.registerNewObjective("game", Criteria.DUMMY, Component.text(title, NamedTextColor.GOLD, TextDecoration.BOLD));
         scoreboardObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         this.timerLine = createScoreboardLine(scoreboard, scoreboardObjective, "9", 10, false);
@@ -156,6 +157,16 @@ public class Game {
         for (Player p : participants) {
             p.setScoreboard(empty);
         }
+    }
+
+    public void removeFromScoreboard(Player player) {
+        Scoreboard empty = Bukkit.getScoreboardManager().getNewScoreboard();
+        player.setScoreboard(empty);
+
+    }
+
+    public void reportPlayerDeparture(Player player) {
+
     }
 
 }

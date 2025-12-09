@@ -38,6 +38,310 @@ public class HideAndSeek extends Game {
             new Vector(318, 227, 953),
             new Vector(330, 227, 956),
             new Vector(251, 227, 928),
+            new Vector(254, 227, 1009),
+            new Vector(256, 227, 1018),
+            new Vector(264, 227, 1011),
+            new Vector(269, 227, 1004),
+            new Vector(228, 227, 999),
+            new Vector(294, 227, 989),
+            new Vector(297, 227, 992),
+            new Vector(308, 227, 994),
+            new Vector(302, 227, 1003),
+            new Vector(302, 227, 999),
+            new Vector(308, 227, 998),
+            new Vector(307, 227, 1009),
+            new Vector(291, 227, 1011),
+            new Vector(292, 227, 1025),
+            new Vector(282, 227, 1025),
+            new Vector(271, 227, 1024),
+            new Vector(273, 227, 1018),
+            new Vector(249, 227, 1008),
+            new Vector(276, 227, 1000),
+            new Vector(283, 227, 998),
+            new Vector(288, 227, 984),
+            new Vector(309, 227, 979),
+            new Vector(309, 227, 966),
+            new Vector(326, 227, 962),
+            new Vector(319, 227, 967),
+            new Vector(332, 227, 967),
+            new Vector(324, 227, 980),
+            new Vector(330, 227, 978),
+            new Vector(324, 227, 986),
+            new Vector(331, 227, 985),
+            new Vector(320, 227, 989),
+            new Vector(319, 227, 971),
+            new Vector(315, 227, 973),
+            new Vector(307, 227, 972),
+            new Vector(338, 227, 957),
+            new Vector(336, 227, 967),
+            new Vector(337, 227, 980),
+            new Vector(344, 227, 978),
+            new Vector(343, 227, 989),
+            new Vector(337, 227, 995),
+            new Vector(337, 227, 987),
+            new Vector(329, 227, 988),
+            new Vector(323, 227, 992),
+            new Vector(331, 227, 992),
+            new Vector(331, 227, 998),
+            new Vector(323, 227, 998),
+            new Vector(314, 227, 998),
+            new Vector(315, 227, 987),
+            new Vector(307, 227, 988),
+            new Vector(299, 227, 986),
+            new Vector(289, 227, 1005),
+            new Vector(281, 227, 1004),
+            new Vector(283, 227, 989),
+            new Vector(281, 227, 983),
+            new Vector(279, 227, 978),
+            new Vector(292, 227, 977),
+            new Vector(285, 227, 974),
+            new Vector(292, 227, 971),
+            new Vector(291, 227, 963),
+            new Vector(283, 227, 963),
+            new Vector(287, 227, 959),
+            new Vector(285, 227, 955),
+            new Vector(290, 227, 957),
+            new Vector(293, 227, 960),
+            new Vector(295, 227, 955),
+            new Vector(298, 227, 958),
+            new Vector(306, 227, 958),
+            new Vector(304, 227, 964),
+            new Vector(304, 227, 968),
+            new Vector(301, 227, 955),
+            new Vector(302, 227, 950),
+            new Vector(306, 227, 951),
+            new Vector(293, 227, 951),
+            new Vector(293, 227, 944),
+            new Vector(282, 227, 945),
+            new Vector(288, 227, 946),
+            new Vector(283, 227, 934),
+            new Vector(294, 227, 935),
+            new Vector(288, 227, 936),
+            new Vector(293, 227, 941),
+            new Vector(284, 227, 940),
+            new Vector(292, 227, 929),
+            new Vector(293, 227, 923),
+            new Vector(297, 227, 920),
+            new Vector(302, 227, 919),
+            new Vector(301, 227, 930),
+            new Vector(308, 227, 929),
+            new Vector(304, 227, 928),
+            new Vector(307, 227, 937),
+            new Vector(311, 227, 934),
+            new Vector(306, 227, 933),
+            new Vector(315, 227, 932),
+            new Vector(314, 227, 939),
+            new Vector(315, 227, 946),
+            new Vector(308, 227, 945),
+            new Vector(324, 227, 934),
+            new Vector(323, 227, 926),
+            new Vector(325, 227, 919),
+            new Vector(313, 227, 920),
+            new Vector(319, 227, 921),
+            new Vector(314, 227, 928),
+            new Vector(319, 227, 927),
+            new Vector(315, 227, 914),
+            new Vector(314, 227, 906),
+            new Vector(325, 227, 908),
+            new Vector(337, 227, 907),
+            new Vector(335, 227, 914),
+            new Vector(336, 227, 923),
+            new Vector(330, 227, 921),
+            new Vector(331, 227, 934),
+            new Vector(330, 227, 927),
+            new Vector(337, 227, 933),
+            new Vector(338, 227, 945),
+            new Vector(341, 227, 950),
+            new Vector(341, 227, 958),
+            new Vector(342, 227, 963),
+            new Vector(351, 227, 961),
+            new Vector(359, 227, 962),
+            new Vector(357, 227, 970),
+            new Vector(358, 227, 975),
+            new Vector(349, 227, 980),
+            new Vector(348, 227, 973),
+            new Vector(348, 227, 987),
+            new Vector(353, 227, 985),
+            new Vector(257, 227, 985),
+            new Vector(355, 227, 992),
+            new Vector(360, 227, 996),
+            new Vector(367, 227, 998),
+            new Vector(374, 227, 997),
+            new Vector(368, 227, 990),
+            new Vector(366, 227, 983),
+            new Vector(372, 227, 985),
+            new Vector(377, 227, 984),
+            new Vector(375, 227, 981),
+            new Vector(386, 227, 981),
+            new Vector(381, 227, 982),
+            new Vector(375, 227, 975),
+            new Vector(376, 227, 969),
+            new Vector(370, 227, 971),
+            new Vector(369, 227, 963),
+            new Vector(370, 227, 953),
+            new Vector(379, 227, 954),
+            new Vector(378, 227, 944),
+            new Vector(370, 227, 946),
+            new Vector(371, 227, 937),
+            new Vector(362, 227, 939),
+            new Vector(364, 227, 931),
+            new Vector(363, 227, 922),
+            new Vector(370, 227, 923),
+            new Vector(355, 227, 924),
+            new Vector(348, 227, 924),
+            new Vector(349, 227, 916),
+            new Vector(362, 227, 955),
+            new Vector(354, 227, 955),
+            new Vector(354, 227, 947),
+            new Vector(355, 227, 937),
+            new Vector(341, 227, 938),
+            new Vector(301, 227, 907),
+            new Vector(303, 227, 911),
+            new Vector(302, 227, 916),
+            new Vector(294, 227, 916),
+            new Vector(287, 227, 915),
+            new Vector(288, 227, 902),
+            new Vector(289, 227, 909),
+            new Vector(281, 227, 904),
+            new Vector(274, 227, 903),
+            new Vector(276, 227, 913),
+            new Vector(265, 227, 914),
+            new Vector(257, 227, 912),
+            new Vector(256, 227, 916),
+            new Vector(271, 227, 931),
+            new Vector(269, 227, 935),
+            new Vector(270, 227, 941),
+            new Vector(261, 227, 941),
+            new Vector(251, 227, 939),
+            new Vector(253, 227, 948),
+            new Vector(252, 227, 957),
+            new Vector(248, 227, 956),
+            new Vector(255, 227, 963),
+            new Vector(255, 227, 955),
+            new Vector(261, 227, 957),
+            new Vector(269, 227, 956),
+            new Vector(267, 227, 960),
+            new Vector(272, 227, 961),
+            new Vector(277, 227, 960),
+            new Vector(275, 227, 956),
+            new Vector(284, 227, 948),
+            new Vector(275, 227, 971),
+            new Vector(280, 227, 972),
+            new Vector(271, 227, 982),
+            new Vector(277, 227, 983),
+            new Vector(299, 227, 999),
+            new Vector(298, 227, 1005),
+            new Vector(300, 227, 1008),
+            new Vector(301, 227, 1017),
+            new Vector(302, 227, 1012),
+            new Vector(297, 227, 1015),
+            new Vector(318, 227, 1008),
+            new Vector(318, 227, 1015),
+            new Vector(309, 227, 1014),
+            new Vector(310, 227, 1020),
+            new Vector(318, 227, 1024),
+            new Vector(311, 227, 1023),
+            new Vector(303, 227, 1024),
+            new Vector(305, 227, 1016),
+            new Vector(316, 227, 1027),
+            new Vector(329, 227, 1040),
+            new Vector(327, 227, 1043),
+            new Vector(337, 227, 1044),
+            new Vector(342, 227, 1043),
+            new Vector(348, 227, 1042),
+            new Vector(346, 227, 1047),
+            new Vector(354, 227, 1046),
+            new Vector(347, 227, 1055),
+            new Vector(336, 227, 1053),
+            new Vector(335, 227, 1063),
+            new Vector(336, 227, 1071),
+            new Vector(358, 227, 1064),
+            new Vector(326, 227, 1069),
+            new Vector(316, 227, 1070),
+            new Vector(317, 227, 1060),
+            new Vector(318, 227, 1080),
+            new Vector(318, 227, 1087),
+            new Vector(308, 227, 1085),
+            new Vector(299, 227, 1086),
+            new Vector(300, 227, 1075),
+            new Vector(288, 227, 1077),
+            new Vector(289, 227, 1072),
+            new Vector(282, 227, 1076),
+            new Vector(284, 227, 1085),
+            new Vector(279, 227, 1083),
+            new Vector(269, 227, 1083),
+            new Vector(262, 227, 1084),
+            new Vector(264, 227, 1080),
+            new Vector(263, 227, 1074),
+            new Vector(252, 227, 1075),
+            new Vector(254, 227, 1056),
+            new Vector(271, 227, 1069),
+            new Vector(262, 227, 1068),
+            new Vector(269, 227, 1061),
+            new Vector(275, 227, 1060),
+            new Vector(283, 227, 1062),
+            new Vector(294, 227, 1051),
+            new Vector(288, 227, 1042),
+            new Vector(202, 227, 1036),
+            new Vector(300, 227, 1034),
+            new Vector(305, 227, 1032),
+            new Vector(315, 227, 1042),
+            new Vector(315, 227, 1051),
+            new Vector(307, 227, 1049),
+            new Vector(301, 227, 1049),
+            new Vector(301, 227, 1061),
+            new Vector(302, 227, 1069),
+            new Vector(288, 227, 1067),
+            new Vector(281, 227, 1069),
+            new Vector(274, 227, 1068),
+            new Vector(276, 227, 1075),
+            new Vector(275, 227, 1085),
+            new Vector(263, 227, 1030),
+            new Vector(270, 227, 1028),
+            new Vector(280, 227, 1028),
+            new Vector(280, 227, 1038),
+            new Vector(275, 227, 1037),
+            new Vector(269, 227, 1038),
+            new Vector(270, 227, 1047),
+            new Vector(276, 227, 1045),
+            new Vector(274, 227, 1054),
+            new Vector(282, 227, 1054),
+            new Vector(280, 227, 1047),
+            new Vector(278, 227, 1041),
+            new Vector(361, 227, 970),
+            new Vector(261, 227, 961),
+            new Vector(255, 227, 968),
+            new Vector(250, 227, 970),
+            new Vector(246, 227, 966),
+            new Vector(269, 227, 969),
+            new Vector(250, 227, 912),
+            new Vector(252, 227, 920),
+            new Vector(362, 227, 1048),
+            new Vector(360, 227, 1040),
+            new Vector(361, 227, 1033),
+            new Vector(366, 227, 1035),
+            new Vector(366, 227, 1025),
+            new Vector(352, 227, 1026),
+            new Vector(354, 227, 1020),
+            new Vector(252, 227, 1014),
+            new Vector(361, 227, 1016),
+            new Vector(352, 227, 1007),
+            new Vector(359, 227, 1004),
+            new Vector(364, 227, 1019),
+            new Vector(374, 227, 1021),
+            new Vector(372, 227, 1010),
+            new Vector(372, 227, 1002),
+            new Vector(379, 227, 1001),
+            new Vector(386, 227, 1003),
+            new Vector(384, 227, 992),
+            new Vector(323, 227, 1015),
+            new Vector(332, 227, 1017),
+            new Vector(330, 227, 1008),
+            new Vector(332, 227, 1001),
+            new Vector(325, 227, 1003),
+            new Vector(316, 227, 1001),
+            new Vector(337, 227, 1009),
+            new Vector(337, 227, 1001),
     };
     public List<Location> usedKeyLocations = new ArrayList<Location>();
     public List<Location> unlockedDoorsLocations = new ArrayList<Location>();
@@ -197,8 +501,6 @@ public class HideAndSeek extends Game {
     }
 
     public void startGame() {
-
-//        hideNameTags();
         healAll();
         spawnKeyChests();
 
@@ -451,11 +753,9 @@ public class HideAndSeek extends Game {
     }
 
     public void hideNameTags() {
-        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
-
-        Team team = board.getTeam("hiddenNames");
+        Team team = scoreboard.getTeam("hiddenNames");
         if (team == null) {
-            team = board.registerNewTeam("hiddenNames");
+            team = scoreboard.registerNewTeam("hiddenNames");
             team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
         }
 
@@ -465,8 +765,7 @@ public class HideAndSeek extends Game {
     }
 
     public void showNameTags() {
-        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
-        Team team = board.getTeam("hiddenNames");
+        Team team = scoreboard.getTeam("hiddenNames");
 
         if (team != null) {
             for (Player player : participants) {
@@ -598,6 +897,8 @@ public class HideAndSeek extends Game {
     public void initScoreboard() {
         createScoreboardWithTimer(PRETTY_TITLE);
 
+        hideNameTags();
+
         Team hidersHeadline = createScoreboardLine(scoreboard, scoreboardObjective, "1000", 8, false);
         hidersHeadline.prefix(Component.text("-- Hiders --", NamedTextColor.BLUE, TextDecoration.BOLD));
 
@@ -650,13 +951,69 @@ public class HideAndSeek extends Game {
         } else {
             playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
         }
+
+        if (!player.connected) {
+            playerLine.prefix(Component.text(player.player.getName() + ": ", NamedTextColor.DARK_GRAY));
+        }
+
     }
 
     public void cleanup() {
         removeKeyChests();
         closeOpenedDoors();
-//        showNameTags();
+        showNameTags();
         removeScoreboard();
+    }
+
+    public void reportPlayerDeparture(Player player) {
+        participants.remove(player);
+        removeFromScoreboard(player);
+
+        player.teleport(world.getSpawnLocation());
+
+        if (gameRunning) {
+
+            HideAndSeekPlayer hnsPlayer = null;
+
+            for (HideAndSeekPlayer p : hiders) {
+                if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+                    hnsPlayer = p;
+                    hiders.remove(p);
+                    break;
+                }
+            }
+
+            if (hnsPlayer == null) {
+                for (HideAndSeekPlayer p : seekers) {
+                    if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+                        hnsPlayer = p;
+                        seekers.remove(p);
+                        break;
+                    }
+                }
+            }
+
+            if (hnsPlayer != null) {
+
+                hnsPlayer.eliminated = true;
+                hnsPlayer.connected = false;
+                hnsPlayer.kills = 0;
+                hnsPlayer.points = 0;
+
+                updatePlayerLine(hnsPlayer);
+
+            } else {
+                plugin.logger.severe("Tried to find " + player.getName() + " for a departure report, but couldn't find them!");
+            }
+
+        }
+
+        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
+
+        if (participants.isEmpty()) {
+            plugin.gameManager.forceStop();
+        }
+
     }
 
 }

@@ -51,11 +51,42 @@ public class GameManager {
         if (currentGame != null) {
             for (Player p : currentGame.participants) {
                 p.teleport(currentGame.spawnpoint);
-                p.sendRichMessage("<red>The game has been forcefully terminated by an administrator.");
+                p.sendRichMessage("<red>The mini-game has been forcefully terminated by an administrator.");
             }
             currentGame.gameRunning = false;
             currentGame.cleanup();
             currentGame = null;
+        }
+    }
+
+    public void hostCancel() {
+        if (currentGame != null) {
+            for (Player p : currentGame.participants) {
+                p.teleport(currentGame.world.getSpawnLocation());
+                p.sendRichMessage("<red><bold>This mini-game has been cancelled by the host.");
+            }
+            currentGame.gameRunning = false;
+            currentGame.cleanup();
+            currentGame = null;
+        }
+    }
+
+    public void reportHostDisconnect() {
+        if (currentGame != null) {
+            if (!currentGame.participants.isEmpty()) {
+                Player newHost = currentGame.participants.getFirst();
+                currentGame.host = newHost;
+                newHost.sendRichMessage("<yellow>You are now the host of this mini-game!");
+
+                newHost.sendRichMessage("<yellow>If you'd like to leave this mini-game, you can do so with the <bold>/agames leave</bold> command!");
+
+                if (!currentGame.gameRunning) {
+                    newHost.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                }
+
+            } else {
+                hostCancel();
+            }
         }
     }
 

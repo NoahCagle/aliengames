@@ -23,6 +23,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
@@ -299,6 +300,27 @@ public class SquidGameEvents implements Listener {
                     event.setDamage(0);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Game currentGame = gameManager.getCurrentGame();
+        if (currentGame != null) {
+            Player player = event.getPlayer();
+
+            if (Globals.playerInList(player, currentGame.participants)) {
+
+                currentGame.reportPlayerDeparture(player);
+
+                if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
+
+                    gameManager.reportHostDisconnect();
+
+                }
+
+            }
+
         }
     }
 

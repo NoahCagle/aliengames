@@ -8,6 +8,9 @@ public class RedLightGreenLightPlayer {
 
     public boolean crossed = false;
     public boolean eliminated = false;
+
+    public boolean connected = true;
+
     public int timeCrossed = -1;
 
     public int points = 0;
