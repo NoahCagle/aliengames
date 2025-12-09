@@ -209,7 +209,7 @@ public class GlassBridge extends Game {
             }
         }
 
-        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin);
+        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
         replaceBridge();
 
@@ -309,6 +309,8 @@ public class GlassBridge extends Game {
                 Component subtitle = Component.text("You can watch the rest of the game from the VIP lounge", NamedTextColor.GOLD);
 
                 p.player.showTitle(Title.title(title, subtitle));
+
+                if (!p.takenFirstLeap) p.takenFirstLeap = true;
 
                 Bukkit.getScheduler().runTaskLater(plugin, () -> p.player.teleport(vipLoungeSpawnpoint), 10); // wont teleport immediately for whatever reason, so im adding a half second delay
 

@@ -1,6 +1,7 @@
 package com.decacagle.aliensmc.utilities;
 
 import com.decacagle.aliensmc.AliensGames;
+import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.PositionSongPlayer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.util.List;
 
@@ -27,6 +29,14 @@ public class Globals {
 
     public static String BROWN_KEY_NAME = "Brown Key";
     public static Material BROWN_KEY_TYPE = Material.WOODEN_HOE;
+
+    // this is for the leftmost firework. the other two points will be at x=185 and x=187
+    public static Vector fireworksLocation = new Vector(183, 264, 1108);
+
+    public static Vector leaderboardLocation = new Vector(185, 264, 1118);
+    public static Vector firstPlaceLocation = new Vector(185, 267, 1110);
+    public static Vector secondPlaceLocation = new Vector(183, 266, 1110);
+    public static Vector thirdPlaceLocation = new Vector(187, 265, 1110);
 
     public static boolean displayNameEquals(ItemStack item, String targetName) {
         ItemMeta meta = item.getItemMeta();
@@ -86,13 +96,13 @@ public class Globals {
         return ret;
     }
 
-    public static void goToLeaderboard(List<Player> players, World world, int winners, AliensGames plugin) {
-        Location leaderboardLoc = new Location(world, 185, 191, 1119, 180, 0);
-        Location firstPlaceLoc = new Location(world, 185, 193, 1110, 0, 0);
-        Location secondPlaceLoc = new Location(world, 183, 192, 1110, 180, 0);
-        Location thirdPlaceLoc = new Location(world, 187, 191, 1110, 180, 0);
+    public static void goToLeaderboard(List<Player> players, World world, int winners, AliensGames plugin, Song song) {
+        Location leaderboardLoc = new Location(world, leaderboardLocation.getX(), leaderboardLocation.getY(), leaderboardLocation.getZ(), 180, 0);
+        Location firstPlaceLoc = new Location(world, firstPlaceLocation.getX(), firstPlaceLocation.getY(), firstPlaceLocation.getZ(), 0, 0);
+        Location secondPlaceLoc = new Location(world, secondPlaceLocation.getX(), secondPlaceLocation.getY(), secondPlaceLocation.getZ(), 0, 0);
+        Location thirdPlaceLoc = new Location(world, thirdPlaceLocation.getX(), thirdPlaceLocation.getY(), thirdPlaceLocation.getZ(), 0, 0);
 
-        PositionSongPlayer psp = new PositionSongPlayer(plugin.congratulationsSong);
+        PositionSongPlayer psp = new PositionSongPlayer(song);
         psp.setTargetLocation(firstPlaceLoc);
         psp.setDistance(16);
 
@@ -120,7 +130,7 @@ public class Globals {
             if (i % 4 != 0) {
                 int fireworkIndex = (i - 1) % 4;
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    Location loc = new Location(world, 183 + (fireworkIndex * 2), 191, 1108);
+                    Location loc = new Location(world, fireworksLocation.getX() + (fireworkIndex * 2), fireworksLocation.getY(), fireworksLocation.getZ());
 
                     Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
 

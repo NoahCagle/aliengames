@@ -41,24 +41,19 @@ public class SquidGameEvents implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (gameManager.getCurrentGame() instanceof RedLightGreenLight redLightGreenLight) {
-            if (player.getGameMode() == GameMode.ADVENTURE) {
-                if (redLightGreenLight.getRedLight() && redLightGreenLight.getSecondsInRedlight() > 1 && player.getLocation().getZ() > RedLightGreenLight.LINE_Z) {
+        if (gameManager.getCurrentGame() instanceof RedLightGreenLight rlgl) {
+            if (Globals.playerInList(player, rlgl.participants)) {
+                if (rlgl.gameRunning && rlgl.redLight) {
+
                     Location from = event.getFrom();
                     Location to = event.getTo();
 
-                    int fromX = (int) from.getX();
-                    int fromY = (int) from.getY();
-                    int fromZ = (int) from.getZ();
+                    if ((((int) from.getX()) != ((int) to.getX())) || (((int) from.getY()) != ((int) to.getY())) || (((int) from.getZ()) != ((int) to.getZ()))) {
 
-                    int toX = (int) to.getX();
-                    int toY = (int) to.getY();
-                    int toZ = (int) to.getZ();
+                        rlgl.registerElimination(player);
 
-                    if (fromX != toX || fromY != toY || fromZ != toZ) {
-                        plugin.logger.info(player.getName() + " moved during red light!");
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> redLightGreenLight.killPlayer(player), (int) (Math.random() * 40));
                     }
+
                 }
             }
         } else if (gameManager.getCurrentGame() instanceof HideAndSeek hns) {
@@ -71,7 +66,7 @@ public class SquidGameEvents implements Listener {
                     int playerY = (int) player.getLocation().getY();
                     int playerZ = (int) player.getLocation().getZ();
 
-                    if ((playerX == ((int) HideAndSeek.ESCAPE_POINT_1.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_1.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_1.getZ())) || (playerX == ((int) HideAndSeek.ESCAPE_POINT_2.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT_2.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT_2.getZ()))) {
+                    if ((playerX == ((int) HideAndSeek.ESCAPE_POINT.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT.getZ()))) {
                         hns.registerEscape(player);
                         player.teleport(hns.spawnpoint);
                         player.setGameMode(GameMode.SPECTATOR);
@@ -221,7 +216,7 @@ public class SquidGameEvents implements Listener {
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     Block block = event.getClickedBlock();
 
-                    if (block != null && block.getType().name().contains("DOOR")) {
+                    if (block != null && block.getType().name().contains("DOOR") && !hns.unlockedDoorsLocations.contains(block.getLocation())) {
                         ItemStack key = player.getInventory().getItemInMainHand();
 
                         if (block.getBlockData().getMaterial() == Material.CRIMSON_DOOR && !isPurpleKey(key)) {
@@ -233,6 +228,9 @@ public class SquidGameEvents implements Listener {
                         } else if (block.getBlockData().getMaterial() == Material.SPRUCE_DOOR && !isBrownKey(key)) {
                             player.sendRichMessage("<red>You don't have the key to this door!");
                             event.setCancelled(true);
+                        } else {
+                            hns.reportDoorOpen(player, block.getLocation());
+                            plugin.logger.info("door opened at " + block.getX() + " " + block.getY() + " " + block.getZ());
                         }
 
                     }

@@ -10,6 +10,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -20,25 +21,13 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class HideAndSeek extends Game {
 
-    public static Vector ESCAPE_POINT_1 = new Vector(308, 218, 888);
-    public static Vector ESCAPE_POINT_2 = new Vector(406, 236, 991);
+    public static Vector ESCAPE_POINT = new Vector(407, 227, 992);
 
     public static Vector[] KEY_LOCATIONS = new Vector[]{
-            new Vector(261, 236, 961),
-            new Vector(246, 236, 965),
-            new Vector(295, 236, 944),
-            new Vector(306, 236, 958),
-            new Vector(291, 236, 963),
-            new Vector(283, 236, 990),
-            new Vector(262, 236, 996),
-            new Vector(252, 236, 1076),
-            new Vector(262, 236, 1085),
-            new Vector(288, 236, 1067),
             new Vector(270, 227, 1051),
             new Vector(252, 227, 1069),
             new Vector(252, 227, 1028),
@@ -49,16 +38,6 @@ public class HideAndSeek extends Game {
             new Vector(318, 227, 953),
             new Vector(330, 227, 956),
             new Vector(251, 227, 928),
-            new Vector(250, 218, 1001),
-            new Vector(255, 218, 987),
-            new Vector(252, 218, 1076),
-            new Vector(318, 218, 1087),
-            new Vector(358, 218, 1054),
-            new Vector(359, 218, 1064),
-            new Vector(291, 218, 1011),
-            new Vector(256, 218, 1018),
-            new Vector(254, 218, 1009),
-            new Vector(279, 218, 994),
     };
     public List<Location> usedKeyLocations = new ArrayList<Location>();
     public List<Location> unlockedDoorsLocations = new ArrayList<Location>();
@@ -88,10 +67,6 @@ public class HideAndSeek extends Game {
     public void timer() {
         secondsPassed++;
 
-        if (secondsPassed == 2) {
-            addKeysToChests();
-        }
-
         if (secondsPassed >= SEEKER_SPAWN_TIME_SECONDS && !seekersSpawnedIn) {
             for (HideAndSeekPlayer p : seekers) {
                 p.player.teleport(mapLoc);
@@ -100,13 +75,7 @@ public class HideAndSeek extends Game {
             seekersSpawnedIn = true;
         }
 
-
-        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameRunning) {
-            gameRunning = false;
-            // hiders win
-            broadcastTitleToAllPlayers(Component.text("Hiders win!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
-            plugin.gameManager.stopGame();
-        } else {
+        if (gameRunning) {
             if ((TOTAL_GAME_TIME_SECONDS - secondsPassed) % 60 == 0) {
                 int minutes = (TOTAL_GAME_TIME_SECONDS - secondsPassed) / 60;
                 if (minutes > 1)
@@ -114,12 +83,14 @@ public class HideAndSeek extends Game {
                 else
                     broadcastMessageToAllPlayers("<gold><bold>" + minutes + " minute remains!");
             }
-            if (gameRunning) {
-                Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
-            } else {
-                showNameTags();
-                goToLeaderboard();
-            }
+
+            checkGameStatus();
+
+            Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
+
+        } else {
+            showNameTags();
+            goToLeaderboard();
         }
 
     }
@@ -140,7 +111,7 @@ public class HideAndSeek extends Game {
         allPlayers.addAll(seekers);
 
         Collections.sort(allPlayers, (o1, o2) -> {
-            if(o1.points == o2.points)
+            if (o1.points == o2.points)
                 return 0;
             return o1.points < o2.points ? 1 : -1;
         });
@@ -151,28 +122,32 @@ public class HideAndSeek extends Game {
 
     public void goToLeaderboard() {
         removeKeyChests();
+        closeOpenedDoors();
 
         givePointsToRemainingHiders();
 
         List<HideAndSeekPlayer> finalResults = sortPlayersByPoints();
 
+        List<Player> orderedPlayers = new ArrayList<Player>();
+
+        int numWinners = 0;
+
         broadcastMessageToAllPlayers("<underlined><gold><bold>Hide And Seek Results\n");
 
         for (int i = 0; i < finalResults.size(); i++) {
             HideAndSeekPlayer p = finalResults.get(i);
-            p.player.setGameMode(GameMode.ADVENTURE);
-            Globals.fullyClearInventory(p.player);
-            if (i == 0) {
-                p.player.teleport(firstPlaceLoc);
-            } else if (i == 1) {
-                p.player.teleport(secondPlaceLoc);
-            } else if (i == 2) {
-                p.player.teleport(thirdPlaceLoc);
-            } else {
-                p.player.teleport(leaderboardLoc);
-            }
+            Player player = p.player;
+            player.setGameMode(GameMode.ADVENTURE);
+            Globals.fullyClearInventory(player);
+
+            if (p.points > 0) numWinners++;
+            orderedPlayers.add(player);
+
             broadcastMessageToAllPlayers("<green>" + (i + 1) + ": " + p.player.getName() + " - " + p.points + " points");
         }
+
+        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
+
     }
 
     public void checkGameStatus() {
@@ -189,9 +164,14 @@ public class HideAndSeek extends Game {
                 broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
                 plugin.gameManager.stopGame();
             }
-        } else if (allSeekersEliminated()) {
+//        } else if (allSeekersEliminated()) {
+//            gameRunning = false;
+//            // hiders win
+//            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+//            plugin.gameManager.stopGame();
+        } else if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameRunning) {
             gameRunning = false;
-            // hiders win
+            // seekers win
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             plugin.gameManager.stopGame();
         }
@@ -275,7 +255,7 @@ public class HideAndSeek extends Game {
         // give hiders their chestplate
         ItemStack hiderChestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
         LeatherArmorMeta hiderChestplateMeta = (LeatherArmorMeta) hiderChestplate.getItemMeta();
-        hiderChestplateMeta.setColor(Color.GREEN);
+        hiderChestplateMeta.setColor(Color.BLUE);
         hiderChestplateMeta.displayName(Component.text("Hider's Chestplate"));
         hiderChestplate.setItemMeta(hiderChestplateMeta);
 
@@ -302,7 +282,7 @@ public class HideAndSeek extends Game {
         player.getInventory().setChestplate(seekerChestplate);
 
         // give seekers their knife
-        ItemStack seekerKnife = new ItemStack(Material.IRON_SWORD);
+        ItemStack seekerKnife = new ItemStack(Globals.DAGGER_TYPE);
         ItemMeta seekerKnifeMeta = seekerKnife.getItemMeta();
 
         seekerKnifeMeta.displayName(Component.text(Globals.DAGGER_NAME)
@@ -501,7 +481,13 @@ public class HideAndSeek extends Game {
     }
 
     public void spawnKeyChests() {
-        int[] usedIndex = new int[] {-1, -1, -1};
+        ItemStack purpleKey = getPurpleKey();
+        ItemStack tielKey = getTielKey();
+        ItemStack brownKey = getBrownKey();
+
+        // tracking locations so two key locations arent used at the same time
+        // its unlikely, but possible
+        int[] usedIndex = new int[]{-1, -1, -1};
 
         for (int i = 0; i < 3; i++) {
             int index = (int) (Math.random() * KEY_LOCATIONS.length);
@@ -517,37 +503,24 @@ public class HideAndSeek extends Game {
 
             usedKeyLocations.add(loc);
 
-        }
-
-    }
-
-    public void addKeysToChests() {
-        ItemStack purpleKey = getPurpleKey();
-        ItemStack tielKey = getTielKey();
-        ItemStack brownKey = getBrownKey();
-
-        for (int i = 0; i < 3; i++) {
-            Location loc = usedKeyLocations.get(i);
-
             Block b = loc.getBlock();
             b.setType(Material.CHEST);
 
-            Chest chest = (Chest) b.getState();
+            Chest chestInv = (Chest) b.getState();
 
             if (i == 0) {
-                chest.getInventory().addItem(purpleKey);
+                chestInv.getBlockInventory().setItem(13, purpleKey);
                 plugin.logger.info("Placed purple key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
             } else if (i == 1) {
-                chest.getInventory().addItem(tielKey);
+                chestInv.getBlockInventory().setItem(13, tielKey);
                 plugin.logger.info("Placed tiel key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
             } else {
-                chest.getInventory().addItem(brownKey);
+                chestInv.getBlockInventory().setItem(13, brownKey);
                 plugin.logger.info("Placed brown key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
             }
 
-            chest.update(true);
-
         }
+
     }
 
     public void removeKeyChests() {
@@ -555,6 +528,16 @@ public class HideAndSeek extends Game {
             world.setBlockData(loc, Material.SNOW.createBlockData());
         }
         usedKeyLocations.clear();
+    }
+
+    public void closeOpenedDoors() {
+        for (Location l : unlockedDoorsLocations) {
+            Block b = l.getBlock();
+            if (b.getBlockData() instanceof Door door) {
+                door.setOpen(false);
+                b.setBlockData(door);
+            }
+        }
     }
 
     public ItemStack getPurpleKey() {
@@ -593,6 +576,21 @@ public class HideAndSeek extends Game {
         brownKey.setItemMeta(brownMeta);
 
         return brownKey;
+    }
+
+    public void reportDoorOpen(Player player, Location location) {
+        if (!unlockedDoorsLocations.contains(location)) {
+            // because the event is registered on whichever part of the door the player clicks, we need to ensure both y=227 AND y=228 are included in the list of unlocked doors
+            if (location.getY() == 227) {
+                unlockedDoorsLocations.add(location);
+                unlockedDoorsLocations.add(new Location(location.getWorld(), location.getX(), 228, location.getZ()));
+            } else if (location.getY() == 228) {
+                unlockedDoorsLocations.add(location);
+                unlockedDoorsLocations.add(new Location(location.getWorld(), location.getX(), 227, location.getZ()));
+            }
+
+            player.sendRichMessage("<green>This door has been unlocked!");
+        }
     }
 
 }

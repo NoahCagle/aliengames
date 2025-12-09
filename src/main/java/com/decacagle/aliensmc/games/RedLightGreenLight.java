@@ -1,34 +1,48 @@
 package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
+import com.decacagle.aliensmc.games.participants.RedLightGreenLightPlayer;
 import com.decacagle.aliensmc.utilities.Globals;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RedLightGreenLight extends Game {
 
-    // measured in ticks
-    private int minTimeBetweenToggle = 40, maxTimeBetweenToggle = 200;
+    private final int minToggleTime = 4, maxToggleTime = 10;
 
-    private List<Player> toKill = new ArrayList<Player>();
+    // time before game starts, measured in seconds.
+    private final int timeBeforeStart = 10;
 
-    // 1 minute, in seconds
+    private final Duration lightFadeIn = Duration.ZERO;
+    private final Duration lightOnScreen = Duration.ofSeconds(2);
+    private final Duration lightFadeOut = Duration.ofMillis(500);
+
+    private List<RedLightGreenLightPlayer> players = new ArrayList<RedLightGreenLightPlayer>();
+
+    // games will last 1 minute
     private final int gameDuration = 60;
-    private int gameCountdown = 60;
-
-    private int redlightCountdown = 0;
-    private int secondsInRedlight = 0;
-
+    private int gameCountdown = gameDuration;
     // all players with Z greater than 1010 have not crossed the line
-    public static int LINE_Z = 1010;
+    public final int LINE_Z = 1010;
+    public final int MIDPOINT_Z = 1046;
 
-    private boolean redLight = false;
+    private int redLightCountdown = 5;
+    private int greenLightCountdown = 5;
 
-    private boolean gameStarted = false;
+    // 0.5 second grace period
+    private int gracePeriodTicks = 10;
+
+    public boolean redLight = false;
 
     private Vector[] cannonLocs = new Vector[]{
             new Vector(987, 151, 994),
@@ -44,165 +58,268 @@ public class RedLightGreenLight extends Game {
     };
 
     public RedLightGreenLight(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 964, 123, 1091), plugin, host);
+        super(new Location(plugin.getServer().getWorld("squidgame"), 965, 123, 1085, -180, 0), plugin, host, 2);
         this.PRETTY_TITLE = "Red Light Green Light";
     }
 
     public void startGame() {
-        for (Player p : world.getPlayers()) {
-            p.sendRichMessage("<green><bold>Green light!");
-        }
-        gameCountdown = gameDuration;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> nextStep(), 20);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> redLight(), randomToggleTime());
-        gameStarted = true;
+
+        fillPlayerListAndTeleport();
+
+        queueGameStart();
+
+        gameRunning = true;
+
     }
 
-    public void stopGame() {
-        gameStarted = false;
-    }
+    public void timer() {
+        if (gameRunning) {
 
-    public int randomToggleTime() {
-        return (int) (Math.random() * (maxTimeBetweenToggle - minTimeBetweenToggle)) + minTimeBetweenToggle;
-    }
-
-    @Override
-    public void nextStep() {
-        if (gameStarted) {
             if (!redLight) {
-                redlightCountdown--;
-                if (redlightCountdown == 0) {
-                    redLight();
+                redLightCountdown--;
+
+                plugin.logger.info("Red light in " + redLightCountdown);
+
+                if (redLightCountdown <= 0) {
+                    activateRedLight();
                 }
+
             } else {
-                secondsInRedlight++;
-                plugin.logger.info("redlight for " + secondsInRedlight + " seconds!");
+                greenLightCountdown--;
+
+                plugin.logger.info("Green light in " + greenLightCountdown);
+
+                if (greenLightCountdown <= 0) {
+                    activateGreenLight();
+                }
+
             }
+
+            plugin.logger.info("gameCountdown: " + gameCountdown);
+
             gameCountdown--;
-            if (gameCountdown == 0) {
-                killAllBehindLine();
-                stopGame();
-            } else if (gameCountdown % 10 == 0) {
-                for (Player p : world.getPlayers()) {
-                    p.sendRichMessage("<yellow><bold>" + gameCountdown + " seconds left!");
+
+            checkGameStatus();
+
+            Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
+        }
+    }
+
+    public void checkGameStatus() {
+        if (gameRunning) {
+            plugin.logger.info("game still running, checking status");
+            for (RedLightGreenLightPlayer p : players) {
+                if (!p.crossed && !p.eliminated) {
+                    if (p.player.getZ() <= LINE_Z) {
+                        registerPlayerCrossing(p);
+                    }
                 }
-                Bukkit.getScheduler().runTaskLater(plugin, () -> nextStep(), 20);
+            }
+
+            if (allCrossedOrEliminated()) {
+                plugin.logger.info("Everyone's out, ending game!");
+                endGame();
+            }
+
+            if (gameCountdown <= 0) {
+                plugin.logger.info("Time's up, ending game!");
+                endGame();
+            }
+
+        }
+    }
+
+    public boolean allCrossedOrEliminated() {
+        for (RedLightGreenLightPlayer p : players) {
+            if (!p.crossed && !p.eliminated) return false;
+        }
+        return true;
+    }
+
+    public void sortPlayersByTimeCrossed() {
+        Collections.sort(players, (o1, o2) -> {
+            if (o1.timeCrossed == o2.timeCrossed)
+                return 0;
+            return o1.timeCrossed < o2.timeCrossed ? 1 : -1;
+        });
+
+        for (int i = 0; i < players.size(); i++) {
+            RedLightGreenLightPlayer p = players.get(i);
+            if (p.crossed) {
+                if (i == 0) p.points = 20;
+                else if (i == 1) p.points = 15;
+                else if (i == 2) p.points = 10;
+                else p.points = 5;
+            } else p.points = 0;
+        }
+
+    }
+
+    public void endGame() {
+        if (gameRunning) {
+            gameRunning = false;
+
+            plugin.logger.info("ending game");
+
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN), Component.text(""));
+
+            Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 40);
+        }
+    }
+
+    public void goToLeaderboard() {
+        plugin.logger.info("scoring and going to leaderboard");
+
+        sortPlayersByTimeCrossed();
+
+        broadcastMessageToAllPlayers("<underlined><gold><bold>Red Light Green Light Results\n");
+
+        List<Player> orderedPlayers = new ArrayList<Player>();
+
+        int numWinners = 0;
+
+        for (int i = 0; i < players.size(); i++) {
+            RedLightGreenLightPlayer p = players.get(i);
+            orderedPlayers.add(p.player);
+            if (p.crossed) {
+                numWinners++;
+                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " - " + p.points + " points");
             } else {
-                Bukkit.getScheduler().runTaskLater(plugin, () -> nextStep(), 20);
+                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Did not cross - " + p.points + " points");
+            }
+        }
+
+        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 20);
+    }
+
+    public void activateRedLight() {
+        broadcastTitleToAllPlayers(Component.text("Red Light!", NamedTextColor.RED, TextDecoration.BOLD), Component.text(""), lightFadeIn, lightOnScreen, lightFadeOut);
+        greenLightCountdown = 6;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            redLight = true;
+        }, gracePeriodTicks);
+    }
+
+    public void activateGreenLight() {
+        redLight = false;
+        broadcastTitleToAllPlayers(Component.text("Green Light!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""), lightFadeIn, lightOnScreen, lightFadeOut);
+        redLightCountdown = randomToggleTimeSeconds();
+    }
+
+    public void killPlayer(RedLightGreenLightPlayer player) {
+
+        player.eliminated = true;
+
+        int randomDelay = (int) (Math.random() * 2);
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            world.playSound(player.player.getLocation(), Sound.ENTITY_PLAYER_DEATH, 1.0f, 1.0f);
+            player.player.setGameMode(GameMode.SPECTATOR);
+            player.player.showTitle(Title.title(Component.text("You've been eliminated!", NamedTextColor.RED), Component.text("")));
+            randomCannonFire(player.player.getZ() > MIDPOINT_Z);
+        }, 30 + randomDelay);
+
+        greenLightCountdown += randomDelay;
+
+    }
+
+    public void randomCannonFire(boolean north) {
+        int indexOffset = 0;
+        if (north) {
+            indexOffset = 5;
+        }
+
+        int randIndex = (int) (Math.random() * 5);
+
+        randIndex += indexOffset;
+
+        Location cannonLoc = new Location(world, cannonLocs[randIndex].getX(), cannonLocs[randIndex].getY(), cannonLocs[randIndex].getZ());
+
+        world.createExplosion(cannonLoc, 10, false, false);
+
+    }
+
+    public void fillPlayerListAndTeleport() {
+        double distanceBetweenPlayers = participants.size() > 26 ? (53.0 / participants.size()) : 2;
+
+        int spaceIter = 1;
+
+        for (int i = 0; i < participants.size(); i++) {
+            Player p = participants.get(i);
+            players.add(new RedLightGreenLightPlayer(p));
+
+            if (i == 0) {
+                p.teleport(spawnpoint);
+            } else {
+                if (i % 2 == 0) {
+                    p.teleport(spawnpoint.add(distanceBetweenPlayers * spaceIter, 0, 0));
+                } else {
+                    p.teleport(spawnpoint.subtract(distanceBetweenPlayers * spaceIter, 0, 0));
+                    spaceIter++;
+                }
+            }
+
+        }
+    }
+
+    public void queueGameStart() {
+        placeBarriers();
+
+        broadcastTitleToAllPlayers(Component.text("Game starts in " + timeBeforeStart + " seconds!", NamedTextColor.RED), Component.text("", NamedTextColor.RED));
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>Game starts in 3..."), (timeBeforeStart * 20) - 60);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>2..."), (timeBeforeStart * 20) - 40);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> broadcastMessageToAllPlayers("<green><bold>1..."), (timeBeforeStart * 20) - 20);
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            removeBarriers();
+            activateGreenLight();
+            Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
+        }, (timeBeforeStart * 20));
+
+    }
+
+    public void placeBarriers() {
+        for (int x = 935; x <= 994; x++) {
+            Location loc = new Location(world, x, 124, 1082);
+            loc.getBlock().setType(Material.BARRIER);
+        }
+    }
+
+    public void removeBarriers() {
+        for (int x = 935; x <= 994; x++) {
+            Location loc = new Location(world, x, 124, 1082);
+            loc.getBlock().setType(Material.AIR);
+        }
+    }
+
+    public void registerElimination(Player eliminated) {
+        for (RedLightGreenLightPlayer p : players) {
+            if (p.player.getUniqueId().compareTo(eliminated.getUniqueId()) == 0) {
+                if (!p.eliminated && !p.crossed) {
+                    killPlayer(p);
+                }
             }
         }
     }
 
-    private void redLight() {
-        secondsInRedlight = 0;
-        worldBroadcast("<red><bold>Red light!");
-        this.redLight = true;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> executeKillList(), 20);
-        if (gameStarted) {
-            int delay = randomToggleTime() + 50;
-            plugin.logger.info("Green light in " + delay + " ticks!");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> greenLight(), delay);
-        }
-    }
+    public int randomToggleTimeSeconds() {
+        int diff = maxToggleTime - minToggleTime;
 
-    private void greenLight() {
-        worldBroadcast("<green><bold>Green light!");
-        redLight = false;
-        if (gameStarted) {
-            int delay = randomToggleTime();
-            plugin.logger.info("Red light in " + delay + " ticks!");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> redLight(), delay);
-        }
-    }
+        int randomTime = (int) (Math.random() * diff);
 
-    @Override
-    public void prepareGame() {
-        determineParticipants();
-    }
-
-    public void executeKillList() {
-
-        for (Player p : toKill) {
-            int delay = ((int) (Math.random() * 50));
-            plugin.logger.info("Killing " + p.getName() + " in " + delay + " ticks!");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> killPlayer(p), delay);
-        }
-        toKill.clear();
-    }
-
-    public void killAllBehindLine() {
-        for (Player p : participants) {
-            if (p.getZ() > LINE_Z && p.getGameMode() == GameMode.ADVENTURE) toKill.add(p);
-        }
-        executeKillList();
-    }
-
-    private void worldBroadcast(String message) {
-        for (Player p : world.getPlayers()) {
-            p.sendRichMessage(message);
-        }
-    }
-
-    public void killPlayer(Player p) {
-        plugin.logger.info("Killing " + p.getName());
-
-        int cannonIndex = (int) (Math.random() * 10);
-
-        Vector cannonLoc = cannonLocs[cannonIndex];
-
-        world.createExplosion(cannonLoc.getX(), cannonLoc.getY(), cannonLoc.getZ(), 4, false, false);
-
-        world.playSound(p.getLocation(), Sound.ENTITY_PLAYER_DEATH, 1.0f, 1.0f);
-
-        p.setGameMode(GameMode.SPECTATOR);
-
-        worldBroadcast("<bold>" + p.getName() + " has been eliminated!");
+        return minToggleTime + randomTime;
 
     }
 
-    public void testExplosion() {
-        int cannonIndex = (int) (Math.random() * 10);
+    public void registerPlayerCrossing(RedLightGreenLightPlayer player) {
+        player.crossed = true;
+        player.timeCrossed = gameDuration - gameCountdown;
 
-        plugin.logger.info("Firing cannon number " + cannonIndex);
+        player.player.showTitle(Title.title(Component.text("You crossed!", NamedTextColor.GREEN), Component.text("")));
 
-        Vector cannonLoc = cannonLocs[cannonIndex];
-
-        world.createExplosion(cannonLoc.getX(), cannonLoc.getY(), cannonLoc.getZ(), 10, false, false);
-    }
-
-    @Override
-    public void determineParticipants() {
-        List<Player> allPlayers = world.getPlayers();
-
-        this.participants.clear();
-
-        // loop through all players in the world
-        // if they are still alive (ie in adventure mode), add them to list of participants
-        // teleport all players, no matter of participation status, to the game's spawnpoint
-        for (Player p : allPlayers) {
-            if (p.getGameMode() == GameMode.ADVENTURE) participants.add(p);
-            p.teleport(spawnpoint);
-        }
-
-    }
-
-    public void setRedLight(boolean redLight) {
-        this.redLight = redLight;
-    }
-
-    public boolean getRedLight() {
-        return redLight;
-    }
-
-    public void addToKillList(Player p) {
-        if (!Globals.playerInList(p, toKill)) {
-            plugin.logger.info("Adding " + p.getName() + " to the kill list!");
-            toKill.add(p);
-        }
-    }
-
-    public int getSecondsInRedlight() {
-        return secondsInRedlight;
     }
 
 }

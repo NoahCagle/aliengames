@@ -9,11 +9,23 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Barrel;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
+// TODO: clean this shit up what the fuck have i done here...
 public class GamesCommand implements BasicCommand {
 
     private GameManager gameManager;
@@ -35,11 +47,11 @@ public class GamesCommand implements BasicCommand {
                 } else {
                     if (commandSourceStack.getSender() instanceof Player host) {
                         if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
-//                            gameManager.prepareGame(new RedLightGreenLight(plugin, host));
-//                            host.sendRichMessage("<yellow>Preparing to play " + RedLightGreenLight.PRETTY_TITLE);
-//                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
-                            host.sendRichMessage("<red>Red Light Green Light is under construction!");
-                            host.sendRichMessage("<red>sowwy... :(");
+                            gameManager.prepareGame(new RedLightGreenLight(plugin, host));
+                            host.sendRichMessage("Preparing to play " + RedLightGreenLight.PRETTY_TITLE);
+                            host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+//                            host.sendRichMessage("<red>Red Light Green Light is under construction!");
+//                            host.sendRichMessage("<red>sowwy... :(");
                         } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
                             gameManager.prepareGame(new HideAndSeek(plugin, host));
                             host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
@@ -105,6 +117,9 @@ public class GamesCommand implements BasicCommand {
                         world.setBlockData((int) v.getX(), (int) v.getY(), (int) v.getZ(), mat.createBlockData());
                     }
 
+                } else if (args[0].equalsIgnoreCase("keychest")) {
+                    sender.sendRichMessage("<gold>Placing key chest!");
+                    placeKeyChest(sender);
                 }
             } else if (args[0].equalsIgnoreCase("keylocs")) {
                 World world = plugin.getServer().getWorld("squidgame");
@@ -125,5 +140,47 @@ public class GamesCommand implements BasicCommand {
             // send list of command options
         }
 
+    }
+
+    public void placeKeyChest(Player player) {
+        ItemStack key = getPurpleKey();
+        if (key == null) {
+            plugin.getLogger().warning("Key item is null");
+        } else if (key.getType() == Material.AIR) {
+            plugin.getLogger().warning("Key item is AIR!");
+        }
+
+        Location loc = player.getLocation().subtract(1, 0, 0);
+
+        Block b = loc.getBlock();
+
+        b.setType(Material.CHEST);
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            BlockState state = b.getState();
+            if (key == null) {
+                plugin.getLogger().warning("Key item is null");
+            } else if (key.getType() == Material.AIR) {
+                plugin.getLogger().warning("Key item is AIR!");
+            }
+            if (state instanceof Chest chest) {
+                plugin.logger.info("State is a barrel!");
+                chest.getBlockInventory().setItem(13, key);
+                player.getInventory().setItem(2, key);
+            } else plugin.logger.info("State is NOT a barrel!");
+        }, 60);
+
+    }
+
+    public ItemStack getPurpleKey() {
+        ItemStack purpleKey = new ItemStack(Globals.PURPLE_KEY_TYPE);
+        ItemMeta purpleMeta = purpleKey.getItemMeta();
+
+        purpleMeta.displayName(Component.text(Globals.PURPLE_KEY_NAME)
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decoration(TextDecoration.ITALIC, false));
+        purpleKey.setItemMeta(purpleMeta);
+
+        return purpleKey;
     }
 }

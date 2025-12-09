@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +66,14 @@ public class Game {
     public void broadcastTitleToAllPlayers(Component title, Component subtitle) {
         for (Player p : participants) {
             p.showTitle(Title.title(title, subtitle));
+        }
+    }
+
+    public void broadcastTitleToAllPlayers(Component title, Component subtitle, Duration fadeIn, Duration onScreen, Duration fadeOut) {
+        for (Player p : participants) {
+            p.showTitle(Title.title(title, subtitle, Title.Times.times(
+                    fadeIn, onScreen, fadeOut
+            )));
         }
     }
 
