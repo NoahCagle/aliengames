@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
@@ -24,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class HideAndSeek extends Game {
-
-    public static Vector ESCAPE_POINT = new Vector(407, 227, 992);
 
     public static Vector[] KEY_LOCATIONS = new Vector[]{
             new Vector(270, 227, 1051),
@@ -343,6 +340,9 @@ public class HideAndSeek extends Game {
             new Vector(337, 227, 1009),
             new Vector(337, 227, 1001),
     };
+
+    public Vector escapePoint;
+
     public List<Location> usedKeyLocations = new ArrayList<Location>();
     public List<Location> unlockedDoorsLocations = new ArrayList<Location>();
 
@@ -354,21 +354,24 @@ public class HideAndSeek extends Game {
     public boolean seekersSpawnedIn = false;
 
     public int secondsPassed = 0;
-    public final int SEEKER_SPAWN_TIME_SECONDS = 30;
-    public final int TOTAL_GAME_TIME_SECONDS = 300;
+    public int seekerSpawnTimeSeconds;
+    public int gameDurationSeconds;
 
     public HideAndSeek(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 183, 266, 1053, 90, 0), plugin, host, 2);
-        this.mapLoc = new Location(spawnpoint.getWorld(), 247.5, 227, 994.5, -90, 0);
-        this.PRETTY_TITLE = "Hide and Seek";
+        super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleHNS), plugin.config.spawnpointXHNS, plugin.config.spawnpointYHNS, plugin.config.spawnpointZHNS, (float) plugin.config.spawnpointYawHNS, (float) plugin.config.spawnpointPitchHNS), plugin, host, plugin.config.minimumPlayersHNS);
+        this.mapLoc = new Location(spawnpoint.getWorld(), plugin.config.mapLocXHNS, plugin.config.mapLocYHNS, plugin.config.mapLocZHNS, (float) plugin.config.mapLocYawHNS, (float) plugin.config.mapLocPitchHNS);
+        this.escapePoint = new Vector(plugin.config.escapeXHNS, plugin.config.escapeYHNS, plugin.config.escapeZHNS);
+        this.gameDurationSeconds = plugin.config.gameDurationSecondsHNS;
+        this.seekerSpawnTimeSeconds = plugin.config.seekerSpawnTimeSecondsHNS;
+        this.prettyTitle = plugin.config.prettyTitleHNS;
     }
 
     public void timer() {
         secondsPassed++;
 
-        updateTimer(Component.text("Time Remaining: "), TOTAL_GAME_TIME_SECONDS - secondsPassed);
+        updateTimer(Component.text("Time Remaining: "), gameDurationSeconds - secondsPassed);
 
-        if (secondsPassed >= SEEKER_SPAWN_TIME_SECONDS && !seekersSpawnedIn) {
+        if (secondsPassed >= seekerSpawnTimeSeconds && !seekersSpawnedIn) {
             for (HideAndSeekPlayer p : seekers) {
                 p.player.teleport(mapLoc);
             }
@@ -377,8 +380,8 @@ public class HideAndSeek extends Game {
         }
 
         if (gameRunning) {
-            if ((TOTAL_GAME_TIME_SECONDS - secondsPassed) % 60 == 0) {
-                int minutes = (TOTAL_GAME_TIME_SECONDS - secondsPassed) / 60;
+            if ((gameDurationSeconds - secondsPassed) % 60 == 0) {
+                int minutes = (gameDurationSeconds - secondsPassed) / 60;
                 if (minutes > 1)
                     broadcastMessageToAllPlayers("<gold><bold>" + minutes + " minutes remain!");
                 else
@@ -481,12 +484,12 @@ public class HideAndSeek extends Game {
                 broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
                 plugin.gameManager.stopGame();
             }
-        } else if (allSeekersEliminated()) {
+        } else if (allSeekersEliminated() && !plugin.config.debugMode) {
             gameRunning = false;
             // hiders win
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             plugin.gameManager.stopGame();
-        } else if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameRunning) {
+        } else if (secondsPassed >= gameDurationSeconds && gameRunning) {
             gameRunning = false;
             // seekers win
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
@@ -935,7 +938,7 @@ public class HideAndSeek extends Game {
     }
 
     public void initScoreboard() {
-        createScoreboardWithTimer(PRETTY_TITLE);
+        createScoreboardWithTimer(prettyTitle);
 
         hideNameTags();
 

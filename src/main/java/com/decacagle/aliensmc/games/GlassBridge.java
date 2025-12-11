@@ -25,31 +25,30 @@ public class GlassBridge extends Game {
     public Location bridgeSpawnpoint;
     public Location vipLoungeSpawnpoint;
 
-    public World world;
-
     public List<GlassBridgePlayer> players = new ArrayList<GlassBridgePlayer>();
     public GlassBridgeSpace[] spaces = new GlassBridgeSpace[18];
 
     public double secondsPassed = 0;
-    public final int TOTAL_GAME_TIME_SECONDS = 300;
+    public int gameDurationSeconds;
 
     public GlassBridge(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 962.5, 96, 1167, -90, 0), plugin, host, 1);
+        super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleGB), plugin.config.spawnpointXGB, plugin.config.spawnpointYGB, plugin.config.spawnpointZGB, (float) plugin.config.spawnpointYawGB, (float) plugin.config.spawnpointPitchGB), plugin, host, plugin.config.minimumPlayersGB);
         this.world = spawnpoint.getWorld();
-        this.bridgeSpawnpoint = new Location(world, 971, 96, 1202);
-        this.vipLoungeSpawnpoint = new Location(world, 1020, 95, 1246.5, 90, 0);
-        this.PRETTY_TITLE = "Glass Bridge";
+        this.bridgeSpawnpoint = new Location(world, plugin.config.bridgeSpawnpointXGB, plugin.config.bridgeSpawnpointYGB, plugin.config.bridgeSpawnpointZGB, (float) plugin.config.bridgeSpawnpointYawGB, (float) plugin.config.bridgeSpawnpointPitchGB);
+        this.vipLoungeSpawnpoint = new Location(world, plugin.config.vipSpawnpointXGB, plugin.config.vipSpawnpointYGB, plugin.config.vipSpawnpointZGB, (float) plugin.config.vipSpawnpointYawGB, (float) plugin.config.vipSpawnpointPitchGB);
+        this.gameDurationSeconds = plugin.config.gameDurationSecondsGB;
+        this.prettyTitle = plugin.config.prettyTitleGB;
     }
 
     public void timer() {
         secondsPassed += GAME_LOOP / 20.0;
 
-        if (secondsPassed >= TOTAL_GAME_TIME_SECONDS) {
+        if (secondsPassed >= gameDurationSeconds) {
             gameRunning = false;
         }
 
         if (secondsPassed % 1 == 0) {
-            updateTimer(Component.text("Time Remaining: "), TOTAL_GAME_TIME_SECONDS - ((int) secondsPassed));
+            updateTimer(Component.text("Time Remaining: "), gameDurationSeconds - ((int) secondsPassed));
         }
 
         checkPlayerPositions();
@@ -63,7 +62,7 @@ public class GlassBridge extends Game {
         if (gameRunning && allPlayersCrossedOrEliminated()) {
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             endGame();
-        } else if (gameRunning && secondsPassed >= TOTAL_GAME_TIME_SECONDS) {
+        } else if (gameRunning && secondsPassed >= gameDurationSeconds) {
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text("Time is up!"));
             endGame();
         }
@@ -151,12 +150,12 @@ public class GlassBridge extends Game {
                     for (GlassBridgeSpace space : spaces) {
 //                        for (int tick = 0; tick < 20; tick += 2) {
 //                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                                if (space.playerIsOnSpace(p.player)) {
-                                    if (!p.takenFirstLeap || p.eliminated) p.takenFirstLeap = true;
-                                    if (!space.playerOnSafeSide(p.player)) {
-                                        space.shatter();
-                                    }
-                                }
+                        if (space.playerIsOnSpace(p.player)) {
+                            if (!p.takenFirstLeap || p.eliminated) p.takenFirstLeap = true;
+                            if (!space.playerOnSafeSide(p.player)) {
+                                space.shatter();
+                            }
+                        }
 //                            }, tick);
 //                        }
                     }
@@ -352,7 +351,7 @@ public class GlassBridge extends Game {
     }
 
     public void initScoreboard() {
-        createScoreboardWithTimer(PRETTY_TITLE);
+        createScoreboardWithTimer(prettyTitle);
 //
 //        scoreboardLightStatus = createScoreboardLine(scoreboard, scoreboardObjective, "2", 2, false);
 //        scoreboardLightStatus.prefix(Component.text("§3", NamedTextColor.GOLD));

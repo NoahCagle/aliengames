@@ -65,7 +65,7 @@ public class SquidGameEvents implements Listener {
                     int playerY = (int) player.getLocation().getY();
                     int playerZ = (int) player.getLocation().getZ();
 
-                    if ((playerX == ((int) HideAndSeek.ESCAPE_POINT.getX()) && playerY == ((int) HideAndSeek.ESCAPE_POINT.getY()) && playerZ == ((int) HideAndSeek.ESCAPE_POINT.getZ()))) {
+                    if ((playerX == ((int) hns.escapePoint.getX()) && playerY == ((int) hns.escapePoint.getY()) && playerZ == ((int) hns.escapePoint.getZ()))) {
                         hns.registerEscape(player);
                         player.teleport(hns.spawnpoint);
                         player.setGameMode(GameMode.SPECTATOR);

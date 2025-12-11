@@ -21,10 +21,10 @@ public class RedLightGreenLight extends Game {
 
     private Team scoreboardLightStatus;
 
-    private final int minToggleTime = 4, maxToggleTime = 8;
+    private int minToggleTime, maxToggleTime;
 
     // time before game starts, measured in seconds.
-    private final int timeBeforeStart = 10;
+    private int timeBeforeStart;
 
     private final Duration lightFadeIn = Duration.ZERO;
     private final Duration lightOnScreen = Duration.ofSeconds(2);
@@ -33,8 +33,8 @@ public class RedLightGreenLight extends Game {
     private List<RedLightGreenLightPlayer> players = new ArrayList<RedLightGreenLightPlayer>();
 
     // games will last 1 minute
-    private final int gameDuration = 60;
-    private int gameCountdown = gameDuration;
+    private int gameDurationSeconds;
+    private int gameCountdown;
     // all players with Z greater than 1010 have not crossed the line
     public final int LINE_Z = 1010;
     public final int MIDPOINT_Z = 1046;
@@ -42,8 +42,7 @@ public class RedLightGreenLight extends Game {
     private int redLightCountdown = 5;
     private int greenLightCountdown = 5;
 
-    // 0.25 second grace period
-    private int gracePeriodTicks = 10;
+    private int gracePeriodTicks;
 
     public boolean redLight = false;
 
@@ -61,8 +60,14 @@ public class RedLightGreenLight extends Game {
     };
 
     public RedLightGreenLight(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 965, 123, 1085, -180, 0), plugin, host, 2);
-        this.PRETTY_TITLE = "Red Light Green Light";
+        super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleRLGL), plugin.config.spawnpointXRLGL, plugin.config.spawnpointYRLGL, plugin.config.spawnpointZRLGL, (float) plugin.config.spawnpointYawRLGL, (float) plugin.config.spawnpointPitchRLGL), plugin, host, plugin.config.minimumPlayersRLGL);
+        this.gameDurationSeconds = plugin.config.gameDurationSecondsRLGL;
+        this.gameCountdown = this.gameDurationSeconds;
+        this.minToggleTime = plugin.config.minimumToggleTimeSecondsRLGL;
+        this.maxToggleTime = plugin.config.maximumToggleTimeSecondsRLGL;
+        this.timeBeforeStart = plugin.config.timeBeforeStartSecondsRLGL;
+        this.gracePeriodTicks = plugin.config.gracePeriodTicksRLGL;
+        this.prettyTitle = plugin.config.prettyTitleRLGL;
     }
 
     public void startGame() {
@@ -354,14 +359,14 @@ public class RedLightGreenLight extends Game {
 
     public void registerPlayerCrossing(RedLightGreenLightPlayer player) {
         player.crossed = true;
-        player.timeCrossed = gameDuration - gameCountdown;
+        player.timeCrossed = gameDurationSeconds - gameCountdown;
 
         updatePlayerLine(player);
 
     }
 
     public void initScoreboard() {
-        createScoreboardWithTimer(PRETTY_TITLE);
+        createScoreboardWithTimer(prettyTitle);
 //
 //        scoreboardLightStatus = createScoreboardLine(scoreboard, scoreboardObjective, "2", 2, false);
 //        scoreboardLightStatus.prefix(Component.text("§3", NamedTextColor.GOLD));

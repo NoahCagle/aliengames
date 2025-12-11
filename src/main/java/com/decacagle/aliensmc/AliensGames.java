@@ -7,6 +7,7 @@ import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,6 +15,8 @@ import java.io.File;
 import java.util.logging.Logger;
 
 public final class AliensGames extends JavaPlugin {
+
+    public ConfigManager config;
 
     public Economy economy;
 
@@ -45,6 +48,9 @@ public final class AliensGames extends JavaPlugin {
             congratulationsSong = NBSDecoder.parse(new File("./plugins/Songs/congratulations.nbs"));
 
         }
+
+        saveDefaultConfig();
+        this.config = new ConfigManager(this);
 
         gameManager = new GameManager(this);
 
@@ -81,6 +87,12 @@ public final class AliensGames extends JavaPlugin {
 
         economy = rsp.getProvider();
         return economy != null;
+    }
+
+    public void reloadConfig(CommandSender sender) {
+        this.reloadConfig();
+        this.config = new ConfigManager(this);
+        sender.sendRichMessage("Reloading AliensGames config...");
     }
 
 }

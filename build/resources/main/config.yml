@@ -1,0 +1,73 @@
+# When activated, a few things will happen
+  # minimum player counts will be ignored
+  # hide and seek will not cease if all seekers are eliminated/left (this lets us run hide and seek solo to test other mechanics)
+  # special game will only cease after everyone has left the game
+debug_mode: false
+
+# Red Light Green Light Settings
+game_world_title_rlgl: "squidgame"
+minimum_players_rlgl: 2
+game_duration_seconds_rlgl: 45
+minimum_toggle_time_seconds: 4
+maximum_toggle_time_seconds: 8
+time_before_start_rlgl: 10
+grace_period_ticks_rlgl: 10
+spawnpoint_x_rlgl: 965
+spawnpoint_y_rlgl: 125
+spawnpoint_z_rlgl: 1085
+spawnpoint_yaw_rlgl: -180
+spawnpoint_pitch_rlgl: 0
+pretty_title_rlgl: "Red Light Green Light"
+
+# Hide and Seek Settings
+game_world_title_hns: "squidgame"
+minimum_players_hns: 2
+game_duration_seconds_hns: 300
+seeker_spawn_time_seconds_hns: 30
+spawnpoint_x_hns: 183
+spawnpoint_y_hns: 266
+spawnpoint_z_hns: 1053
+spawnpoint_yaw_hns: 90
+spawnpoint_pitch_hns: 0
+map_loc_x_hns: 247.5
+map_loc_y_hns: 227
+map_loc_z_hns: 994
+map_loc_yaw_hns: -90
+map_loc_pitch_hns: 0
+escape_x_hns: 407
+escape_y_hns: 227
+escape_z_hns: 992
+pretty_title_hns: "Hide and Seek"
+
+# Glass Bridge Settings
+game_world_title_gb: "squidgame"
+minimum_players_gb: 1
+game_duration_seconds_gb: 300
+spawnpoint_x_gb: 962.5
+spawnpoint_y_gb: 96
+spawnpoint_z_gb: 1167
+spawnpoint_yaw_gb: -90
+spawnpoint_pitch_gb: 0
+bridge_spawnpoint_x_gb: 971
+bridge_spawnpoint_y_gb: 96
+bridge_spawnpoint_z_gb: 1202
+bridge_spawnpoint_yaw_gb: 0
+bridge_spawnpoint_pitch_gb: 0
+vip_spawnpoint_x_gb: 1020
+vip_spawnpoint_y_gb: 95
+vip_spawnpoint_z_gb: 1246.5
+vip_spawnpoint_yaw_gb: 90
+vip_spawnpoint_pitch_gb: 0
+pretty_title_gb: "Glass Bridge"
+
+# Special Game Settings
+game_world_title_sg: "squidgame"
+minimum_players_sg: 2
+game_duration_seconds_sg: 300
+time_before_start_sg: 10
+spawnpoint_x_sg: 758
+spawnpoint_y_sg: 17
+spawnpoint_z_sg: 1163
+spawnpoint_yaw_sg: -135
+spawnpoint_pitch_sg: 0
+pretty_title_sg: "Special Game"

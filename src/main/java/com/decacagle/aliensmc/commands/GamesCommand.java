@@ -71,16 +71,16 @@ public class GamesCommand implements BasicCommand {
                     if (currentGame != null) {
                         if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                             if (!currentGame.gameRunning) {
-//                                if (currentGame.participants.size() >= currentGame.minPlayers) {
-                                sender.sendRichMessage("<green><bold>Starting the mini-game!");
-                                gameManager.getCurrentGame().startGame();
-//                                } else {
-//                                    sender.sendRichMessage("<red><bold>There are not enough players to start yet!");
-//                                    sender.sendRichMessage("<red><bold>This mini-game requires a minimum of " + currentGame.minPlayers + " players!");
-//                                    sender.sendRichMessage("<red><bold>You only have " + currentGame.participants.size() + " players!");
-//                                }
+                                if (currentGame.participants.size() >= currentGame.minPlayers || plugin.config.debugMode) {
+                                    sender.sendRichMessage("<green><bold>Starting the mini-game!");
+                                    gameManager.getCurrentGame().startGame();
+                                } else {
+                                    sender.sendRichMessage("<red><bold>There are not enough players to start yet!");
+                                    sender.sendRichMessage("<red><bold>This mini-game requires a minimum of " + currentGame.minPlayers + " players!");
+                                    sender.sendRichMessage("<red><bold>You only have " + currentGame.participants.size() + " players!");
+                                }
                             } else {
-                                player.sendRichMessage("<red><bold>The game has already mini-game!");
+                                player.sendRichMessage("<red><bold>The game has already started!");
                             }
                         } else {
                             player.sendRichMessage("<red><bold>You are not the host of this mini-game!");
@@ -184,6 +184,10 @@ public class GamesCommand implements BasicCommand {
                             if (gameManager.getCurrentGame() instanceof SpecialGame sg) {
                                 sg.toggleLights();
                             }
+                        } else if (args[1].equalsIgnoreCase("reload")) {
+                            plugin.reloadConfig(sender);
+                        } else {
+                            sendAdminCommandsList(sender);
                         }
                     } else {
                         sendAdminCommandsList(sender);
@@ -214,9 +218,9 @@ public class GamesCommand implements BasicCommand {
             return completions;
         } else if (args.length >= 2) {
             if (args[0].equalsIgnoreCase("host"))
-                return List.of("rlgl", "hns", "gb");
+                return List.of("rlgl", "hns", "gb", "sg");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
-                return List.of("forcestop", "keylocs", "togglelights");
+                return List.of("forcestop", "keylocs", "togglelights", "reload");
             }
         }
 
@@ -228,12 +232,15 @@ public class GamesCommand implements BasicCommand {
         player.sendRichMessage("<green>/agames host rlgl - Host a game of Red Light Green Light");
         player.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
         player.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
+        player.sendRichMessage("<green>/agames host sg - Host a Special Game");
     }
 
     public void sendAdminCommandsList(CommandSender sender) {
         sender.sendRichMessage("<red><bold><underlined>AlienGames Admin Commands");
-        sender.sendRichMessage("<red>/agames forcestop - Force the current mini-game to halt");
-        sender.sendRichMessage("<red>/agames keylocs - Show and hide possible key locations for hide and seek");
+        sender.sendRichMessage("<red>/agames admin forcestop - Force the current mini-game to halt");
+        sender.sendRichMessage("<red>/agames admin keylocs - Show and hide possible key locations for hide and seek");
+        sender.sendRichMessage("<red>/agames admin togglelights - Toggle the lights in Special Game (game must be running)");
+        sender.sendRichMessage("<red>/agames admin reload - Reload values in config.yml");
     }
 
     public void sendAllCommandsList(CommandSender sender) {
@@ -268,7 +275,7 @@ public class GamesCommand implements BasicCommand {
 
     public void hostGame(Game game) {
         gameManager.prepareGame(game);
-        game.host.sendRichMessage("Preparing to play " + HideAndSeek.PRETTY_TITLE);
+        game.host.sendRichMessage("Preparing to play " + game.prettyTitle);
         game.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
     }
 

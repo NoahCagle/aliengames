@@ -25,30 +25,33 @@ import java.util.List;
 
 public class SpecialGame extends Game {
 
-    public boolean lightOn = true;
+    public boolean lightsOn = true;
 
     public List<SpecialGamePlayer> players = new ArrayList<SpecialGamePlayer>();
     public List<Location> placedBlockLocations = new ArrayList<Location>();
 
-    public final int timeBeforeStart = 10;
+    public int timeBeforeStart;
 
-    // set to true after 10 second start period
+    // set to true after start period
+    // pvp disabled when this is false
     public boolean gameStarted = false;
 
     public int secondsPassed = 0;
-    public final int TOTAL_GAME_TIME_SECONDS = 300;
+    public int gameDurationSeconds;
 
     public SpecialGame(AliensGames plugin, Player host) {
-        super(new Location(plugin.getServer().getWorld("squidgame"), 758, 17, 1163, -135, 0), plugin, host, 1);
+        super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleSG), plugin.config.spawnpointXSG, plugin.config.spawnpointYSG, plugin.config.spawnpointZSG, (float) plugin.config.spawnpointYawSG, (float) plugin.config.spawnpointPitchSG), plugin, host, plugin.config.minimumPlayersSG);
         this.world = spawnpoint.getWorld();
-        this.PRETTY_TITLE = "Special Game";
+        this.gameDurationSeconds = plugin.config.gameDurationSecondsSG;
+        this.timeBeforeStart = plugin.config.timeBeforeStartSecondsSG;
+        this.prettyTitle = plugin.config.prettyTitleSG;
     }
 
     public void timer() {
 
         if (gameRunning) {
             secondsPassed++;
-            updateTimer(Component.text("Time Remaining: "), TOTAL_GAME_TIME_SECONDS - secondsPassed);
+            updateTimer(Component.text("Time Remaining: "), gameDurationSeconds - secondsPassed);
             checkGameStatus();
             Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
         }
@@ -96,12 +99,13 @@ public class SpecialGame extends Game {
     }
 
     public void checkGameStatus() {
-        int remainingPlayers = playersAlive();
+        if (gameRunning) {
+            int remainingPlayers = playersAlive();
 
-        if (remainingPlayers <= 1 || secondsPassed >= TOTAL_GAME_TIME_SECONDS) {
-            endGame();
+            if (remainingPlayers <= (plugin.config.debugMode ? 0 : 1) || secondsPassed >= gameDurationSeconds) {
+                endGame();
+            }
         }
-
     }
 
     public void endGame() {
@@ -150,7 +154,7 @@ public class SpecialGame extends Game {
 
         int numWinners = 0;
 
-        broadcastMessageToAllPlayers("<underlined><green><bold>Hide And Seek Rankings\n");
+        broadcastMessageToAllPlayers("<underlined><green><bold>Special Game Rankings\n");
 
         for (int i = 0; i < finalResults.size(); i++) {
             SpecialGamePlayer p = finalResults.get(i);
@@ -215,7 +219,7 @@ public class SpecialGame extends Game {
         for (Player p : participants) {
             p.addPotionEffect(new PotionEffect(
                     PotionEffectType.DARKNESS,
-                    20 * TOTAL_GAME_TIME_SECONDS,
+                    20 * gameDurationSeconds,
                     2
             ));
         }
@@ -225,7 +229,7 @@ public class SpecialGame extends Game {
         for (Player p : participants) {
             p.addPotionEffect(new PotionEffect(
                     PotionEffectType.NIGHT_VISION,
-                    20 * TOTAL_GAME_TIME_SECONDS,
+                    20 * gameDurationSeconds,
                     2
             ));
         }
@@ -248,9 +252,7 @@ public class SpecialGame extends Game {
     }
 
     public void toggleLights() {
-        lightOn = !lightOn;
-
-        if (lightOn) {
+        if (lightsOn) {
             Bukkit.getScheduler().runTaskLater(plugin, this::removeEndRods, 10);
             Bukkit.getScheduler().runTaskLater(plugin, this::removeSeaLanterns, 20);
             Bukkit.getScheduler().runTaskLater(plugin, this::removeLightBlocks, 30);
@@ -259,6 +261,8 @@ public class SpecialGame extends Game {
             Bukkit.getScheduler().runTaskLater(plugin, this::replaceSeaLanterns, 20);
             Bukkit.getScheduler().runTaskLater(plugin, this::replaceLightBlocks, 30);
         }
+
+        lightsOn = !lightsOn;
     }
 
     public void removeEndRods() {
@@ -553,7 +557,7 @@ public class SpecialGame extends Game {
     }
 
     public void initScoreboard() {
-        createScoreboardWithTimer(PRETTY_TITLE);
+        createScoreboardWithTimer(prettyTitle);
 
         hideNameTags();
 

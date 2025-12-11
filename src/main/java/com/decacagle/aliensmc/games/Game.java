@@ -34,7 +34,7 @@ public class Game {
 
     public boolean gameRunning = false;
 
-    public static String PRETTY_TITLE;
+    public String prettyTitle;
 
     public int minPlayers;
 
