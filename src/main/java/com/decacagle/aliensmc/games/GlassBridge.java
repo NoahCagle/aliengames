@@ -3,7 +3,6 @@ package com.decacagle.aliensmc.games;
 import com.decacagle.aliensmc.AliensGames;
 import com.decacagle.aliensmc.games.blocks.GlassBridgeSpace;
 import com.decacagle.aliensmc.games.participants.GlassBridgePlayer;
-import com.decacagle.aliensmc.games.participants.RedLightGreenLightPlayer;
 import com.decacagle.aliensmc.utilities.Globals;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,7 +20,7 @@ import java.util.List;
 
 public class GlassBridge extends Game {
 
-    public final long GAME_LOOP = 5L;
+    public final long GAME_LOOP = 20L;
 
     public Location bridgeSpawnpoint;
     public Location vipLoungeSpawnpoint;
@@ -150,13 +149,16 @@ public class GlassBridge extends Game {
             if (p.player.getGameMode() == GameMode.ADVENTURE) {
                 if (!p.crossed && !p.eliminated) {
                     for (GlassBridgeSpace space : spaces) {
-                        if (space.playerIsOnSpace(p.player)) {
-                            if (!p.takenFirstLeap || p.eliminated) p.takenFirstLeap = true;
-                            if (!space.playerOnSafeSide(p.player)) {
-                                space.shatter();
-                            }
-                            break;
-                        }
+//                        for (int tick = 0; tick < 20; tick += 2) {
+//                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                if (space.playerIsOnSpace(p.player)) {
+                                    if (!p.takenFirstLeap || p.eliminated) p.takenFirstLeap = true;
+                                    if (!space.playerOnSafeSide(p.player)) {
+                                        space.shatter();
+                                    }
+                                }
+//                            }, tick);
+//                        }
                     }
 
                     if (p.player.getZ() >= 1284) {
@@ -202,7 +204,7 @@ public class GlassBridge extends Game {
     public void goToLeaderboard() {
         sortPlayersByTimeCrossed();
 
-        broadcastMessageToAllPlayers("<underlined><gold><bold>Glass Bridge Results\n");
+        broadcastMessageToAllPlayers("<underlined><green><bold>Glass Bridge Rankings\n");
 
         List<Player> orderedPlayers = new ArrayList<Player>();
 
@@ -211,13 +213,19 @@ public class GlassBridge extends Game {
         for (int i = 0; i < players.size(); i++) {
             GlassBridgePlayer p = players.get(i);
             orderedPlayers.add(p.player);
+
+            String numberColor = i == 0 ? ("<#D4AF37>") : (i == 1 ? ("<#C0C0C0>") : (i == 2 ? ("<#CD7F32>") : ("<gray>")));
+
             if (p.crossed) {
                 numWinners++;
-                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold</green><white> - $" + p.points);
+                plugin.economy.depositPlayer(p.player, p.points);
             } else {
-                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Did not cross - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - $0");
             }
         }
+
+        broadcastMessageToAllPlayers("");
 
         Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
@@ -387,12 +395,16 @@ public class GlassBridge extends Game {
 
     public void cleanup() {
         replaceBridge();
-        removeScoreboard();
+        if (this.scoreboard != null) {
+            removeScoreboard();
+        }
     }
 
     public void reportPlayerDeparture(Player player) {
         participants.remove(player);
         removeFromScoreboard(player);
+
+        Globals.fullyClearInventory(player);
 
         player.teleport(world.getSpawnLocation());
 

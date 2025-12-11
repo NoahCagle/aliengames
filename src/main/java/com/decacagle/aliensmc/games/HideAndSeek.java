@@ -399,7 +399,7 @@ public class HideAndSeek extends Game {
         for (HideAndSeekPlayer p : hiders) {
             if (!p.eliminated && !p.escaped) {
                 p.player.sendRichMessage("<gold>Survived until the end!");
-                p.player.sendRichMessage("<bold><green>+5 points!");
+                p.player.sendRichMessage("<bold><green>You've earned $5.00!");
                 p.points += 5;
             }
         }
@@ -429,7 +429,7 @@ public class HideAndSeek extends Game {
 
         int numWinners = 0;
 
-        broadcastMessageToAllPlayers("<underlined><gold><bold>Hide And Seek Results\n");
+        broadcastMessageToAllPlayers("<underlined><green><bold>Hide And Seek Rankings\n");
 
         for (int i = 0; i < finalResults.size(); i++) {
             HideAndSeekPlayer p = finalResults.get(i);
@@ -437,11 +437,31 @@ public class HideAndSeek extends Game {
             player.setGameMode(GameMode.ADVENTURE);
             Globals.fullyClearInventory(player);
 
-            if (p.points > 0) numWinners++;
+            if (p.points > 0 && !p.eliminated) numWinners++;
             orderedPlayers.add(player);
 
-            broadcastMessageToAllPlayers("<green>" + (i + 1) + ": " + p.player.getName() + " - " + p.points + " points");
+            String numberColor = i == 0 ? ("<#D4AF37>") : (i == 1 ? ("<#C0C0C0>") : (i == 2 ? ("<#CD7F32>") : ("<gray>")));
+            String teamColor = p.seeker ? ("<red>") : ("<blue>");
+
+            if (p.eliminated) {
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <red><bold>Eliminated</bold></red><white> - $0");
+            } else if (p.escaped) {
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + " - <gold><bold>Escaped</bold></gold><white> - $" + p.points);
+                plugin.economy.depositPlayer(p.player, p.points);
+            } else if (p.seeker) {
+                if (p.kills > 0) {
+                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - <green><bold>PASS</bold></green><white> - $" + p.points);
+                    plugin.economy.depositPlayer(p.player, p.points);
+                } else {
+                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - 0 Kills - <red><bold>FAIL</bold></red><white> - $0");
+                }
+            } else {
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <green><bold>Survived</bold></green><white> - $" + p.points);
+                plugin.economy.depositPlayer(p.player, p.points);
+            }
         }
+
+        broadcastMessageToAllPlayers(" ");
 
         Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
@@ -461,11 +481,11 @@ public class HideAndSeek extends Game {
                 broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
                 plugin.gameManager.stopGame();
             }
-//        } else if (allSeekersEliminated()) {
-//            gameRunning = false;
-//            // hiders win
-//            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
-//            plugin.gameManager.stopGame();
+        } else if (allSeekersEliminated()) {
+            gameRunning = false;
+            // hiders win
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
+            plugin.gameManager.stopGame();
         } else if (secondsPassed >= TOTAL_GAME_TIME_SECONDS && gameRunning) {
             gameRunning = false;
             // seekers win
@@ -607,7 +627,7 @@ public class HideAndSeek extends Game {
                 p.player.showTitle(Title.title(title, subtitle));
 
                 p.player.sendRichMessage("<gold>You have escaped!");
-                p.player.sendRichMessage("<bold><green>+10 points!");
+                p.player.sendRichMessage("<bold><green>You've earned $10.00!");
                 p.points += 10;
 
                 updatePlayerLine(p);
@@ -716,15 +736,15 @@ public class HideAndSeek extends Game {
 
             if (killedHNSP.seeker && !killerHNSP.seeker) {
                 killer.sendRichMessage("<gold>You killed a seeker!");
-                killer.sendRichMessage("<bold><green>+20 points!");
+                killer.sendRichMessage("<bold><green>You've earned $20.00!");
                 killerHNSP.points += 20;
             } else if (!killedHNSP.seeker && !killerHNSP.seeker) {
                 killer.sendRichMessage("<gold>You killed a fellow hider!");
-                killer.sendRichMessage("<bold><green>+5 points!");
+                killer.sendRichMessage("<bold><green>You've earned $5.00");
                 killerHNSP.points += 5;
             } else {
                 killer.sendRichMessage("<gold>You killed a hider!");
-                killer.sendRichMessage("<bold><green>+5 points!");
+                killer.sendRichMessage("<bold><green>You've earned $5.00");
                 killerHNSP.points += 5;
             }
 
@@ -743,6 +763,17 @@ public class HideAndSeek extends Game {
 
     public boolean playerIsHider(Player player) {
         for (HideAndSeekPlayer p : hiders) {
+            if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
+
+                return true;
+
+            }
+        }
+        return false;
+    }
+
+    public boolean playerIsSeeker(Player player) {
+        for (HideAndSeekPlayer p : seekers) {
             if (p.player.getUniqueId().compareTo(player.getUniqueId()) == 0) {
 
                 return true;
@@ -771,13 +802,6 @@ public class HideAndSeek extends Game {
             for (Player player : participants) {
                 team.removeEntry(player.getName());
             }
-        }
-    }
-
-    public void healAll() {
-        for (Player p : participants) {
-            p.setHealth(20);
-            p.setFoodLevel(20);
         }
     }
 
@@ -848,6 +872,12 @@ public class HideAndSeek extends Game {
         purpleMeta.displayName(Component.text(Globals.PURPLE_KEY_NAME)
                 .color(NamedTextColor.LIGHT_PURPLE)
                 .decoration(TextDecoration.ITALIC, false));
+
+        purpleMeta.lore(List.of(
+                Component.text("This key can open any purple", NamedTextColor.DARK_PURPLE),
+                Component.text("Crimson Door you may find!", NamedTextColor.DARK_PURPLE)
+        ));
+
         purpleKey.setItemMeta(purpleMeta);
 
         return purpleKey;
@@ -861,6 +891,11 @@ public class HideAndSeek extends Game {
                 .color(NamedTextColor.BLUE)
                 .decoration(TextDecoration.ITALIC, false));
 
+        tielMeta.lore(List.of(
+                Component.text("This key can open any tiel", NamedTextColor.DARK_BLUE),
+                Component.text("Warped Door you may find!", NamedTextColor.DARK_BLUE)
+        ));
+
         tielKey.setItemMeta(tielMeta);
 
         return tielKey;
@@ -873,6 +908,11 @@ public class HideAndSeek extends Game {
         brownMeta.displayName(Component.text(Globals.BROWN_KEY_NAME)
                 .color(NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
+
+        brownMeta.lore(List.of(
+                Component.text("This key can open any brown", NamedTextColor.DARK_GRAY),
+                Component.text("Spruce Door you may find!", NamedTextColor.DARK_GRAY)
+        ));
 
         brownKey.setItemMeta(brownMeta);
 
@@ -961,13 +1001,17 @@ public class HideAndSeek extends Game {
     public void cleanup() {
         removeKeyChests();
         closeOpenedDoors();
-        showNameTags();
-        removeScoreboard();
+        if (this.scoreboard != null) {
+            showNameTags();
+            removeScoreboard();
+        }
     }
 
     public void reportPlayerDeparture(Player player) {
         participants.remove(player);
         removeFromScoreboard(player);
+
+        Globals.fullyClearInventory(player);
 
         player.teleport(world.getSpawnLocation());
 

@@ -151,7 +151,13 @@ public class Game {
     }
 
     public void removeScoreboard() {
-        scoreboardObjective.unregister();
+        try {
+            scoreboardObjective.unregister();
+        } catch (Exception e) {
+            plugin.logger.severe("Error caught when trying to unregister scoreboard objective!");
+            plugin.logger.severe("e: " + e);
+            plugin.logger.severe(scoreboardObjective == null ? "scoreboardObjective is null!" : "scoreboardObject is NOT null!");
+        }
 
         Scoreboard empty = Bukkit.getScoreboardManager().getNewScoreboard();
         for (Player p : participants) {

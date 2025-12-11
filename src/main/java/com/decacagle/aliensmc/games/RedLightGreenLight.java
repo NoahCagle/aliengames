@@ -1,7 +1,6 @@
 package com.decacagle.aliensmc.games;
 
 import com.decacagle.aliensmc.AliensGames;
-import com.decacagle.aliensmc.games.participants.HideAndSeekPlayer;
 import com.decacagle.aliensmc.games.participants.RedLightGreenLightPlayer;
 import com.decacagle.aliensmc.utilities.Globals;
 import net.kyori.adventure.text.Component;
@@ -44,7 +43,7 @@ public class RedLightGreenLight extends Game {
     private int greenLightCountdown = 5;
 
     // 0.25 second grace period
-    private int gracePeriodTicks = 5;
+    private int gracePeriodTicks = 10;
 
     public boolean redLight = false;
 
@@ -189,7 +188,7 @@ public class RedLightGreenLight extends Game {
 
         sortPlayersByTimeCrossed();
 
-        broadcastMessageToAllPlayers("<underlined><gold><bold>Red Light Green Light Results\n");
+        broadcastMessageToAllPlayers("<underlined><gold><bold>Red Light Green Light Rankings\n");
 
         List<Player> orderedPlayers = new ArrayList<Player>();
 
@@ -198,13 +197,19 @@ public class RedLightGreenLight extends Game {
         for (int i = 0; i < players.size(); i++) {
             RedLightGreenLightPlayer p = players.get(i);
             orderedPlayers.add(p.player);
+
+            String numberColor = i == 0 ? ("<#D4AF37>") : (i == 1 ? ("<#C0C0C0>") : (i == 2 ? ("<#CD7F32>") : ("<gray>")));
+
             if (p.crossed) {
                 numWinners++;
-                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold></green><white> - $" + p.points);
+                plugin.economy.depositPlayer(p.player, p.points);
             } else {
-                broadcastMessageToAllPlayers("<green>" + Globals.numberToPosition(i + 1) + ": " + p.player.getName() + " - Did not cross - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - $0");
             }
         }
+
+        broadcastMessageToAllPlayers("");
 
         removeScoreboard();
         Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
@@ -314,11 +319,6 @@ public class RedLightGreenLight extends Game {
 
     }
 
-    public void updateScoreboardDot() {
-        scoreboardLightStatus.prefix(Component.text("⬛⬛⬛⬛⬛", redLight ? NamedTextColor.RED : NamedTextColor.GREEN, TextDecoration.BOLD));
-        scoreboardLightStatus.suffix(Component.text("⬛⬛⬛⬛⬛", redLight ? NamedTextColor.RED : NamedTextColor.GREEN, TextDecoration.BOLD));
-    }
-
     public void placeBarriers() {
         for (int x = 935; x <= 994; x++) {
             Location loc = new Location(world, x, 124, 1082);
@@ -403,12 +403,16 @@ public class RedLightGreenLight extends Game {
     }
 
     public void cleanup() {
-        removeScoreboard();
+        if (this.scoreboard != null) {
+            removeScoreboard();
+        }
     }
 
     public void reportPlayerDeparture(Player player) {
         participants.remove(player);
         removeFromScoreboard(player);
+
+        Globals.fullyClearInventory(player);
 
         player.teleport(world.getSpawnLocation());
 

@@ -1,10 +1,7 @@
 package com.decacagle.aliensmc.commands;
 
 import com.decacagle.aliensmc.AliensGames;
-import com.decacagle.aliensmc.games.Game;
-import com.decacagle.aliensmc.games.GlassBridge;
-import com.decacagle.aliensmc.games.HideAndSeek;
-import com.decacagle.aliensmc.games.RedLightGreenLight;
+import com.decacagle.aliensmc.games.*;
 import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
@@ -53,6 +50,9 @@ public class GamesCommand implements BasicCommand {
                                 hostGame(new HideAndSeek(plugin, host));
                             } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
                                 hostGame(new GlassBridge(plugin, host));
+                            } else if (args[1].equalsIgnoreCase("sg") || args[1].equalsIgnoreCase("specialgame")) {
+                                hostGame(new SpecialGame(plugin, host));
+//                                sendHostableGamesMessage(host);
                             } else {
                                 sendHostableGamesMessage(host);
                             }
@@ -180,6 +180,10 @@ public class GamesCommand implements BasicCommand {
                                 sender.sendRichMessage("<yellow>Hiding hide and seek key locations!");
                             }
 
+                        } else if (args[1].equalsIgnoreCase("togglelights")) {
+                            if (gameManager.getCurrentGame() instanceof SpecialGame sg) {
+                                sg.toggleLights();
+                            }
                         }
                     } else {
                         sendAdminCommandsList(sender);
@@ -187,6 +191,8 @@ public class GamesCommand implements BasicCommand {
                 } else {
                     sender.sendRichMessage("<red>You don't have access to that command!");
                 }
+            } else {
+                sendAllCommandsList(sender);
             }
         }
 
@@ -200,6 +206,8 @@ public class GamesCommand implements BasicCommand {
             completions.add("host");
             completions.add("join");
             completions.add("start");
+            completions.add("leave");
+            completions.add("cancel");
             if (stack.getSender().hasPermission(ADMIN_PERMS)) {
                 completions.add("admin");
             }
@@ -208,7 +216,7 @@ public class GamesCommand implements BasicCommand {
             if (args[0].equalsIgnoreCase("host"))
                 return List.of("rlgl", "hns", "gb");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
-                return List.of("forcestop", "keylocs");
+                return List.of("forcestop", "keylocs", "togglelights");
             }
         }
 
@@ -223,10 +231,22 @@ public class GamesCommand implements BasicCommand {
     }
 
     public void sendAdminCommandsList(CommandSender sender) {
-
+        sender.sendRichMessage("<red><bold><underlined>AlienGames Admin Commands");
+        sender.sendRichMessage("<red>/agames forcestop - Force the current mini-game to halt");
+        sender.sendRichMessage("<red>/agames keylocs - Show and hide possible key locations for hide and seek");
     }
 
     public void sendAllCommandsList(CommandSender sender) {
+        sender.sendRichMessage("<gold><bold><underlined>AlienGames Commands");
+        sender.sendRichMessage("<yellow>/agames host <game> - Host a mini-game");
+        sender.sendRichMessage("<yellow>/agames join - Join a mini-game that's currently being hosted");
+        sender.sendRichMessage("<yellow>/agames start - Start the mini-game that you're hosting");
+        sender.sendRichMessage("<yellow>/agames cancel - Cancel the mini-game that you're hosting");
+        sender.sendRichMessage("<yellow>/agames leave - Leave the mini-game that you're currently playing");
+
+        if (sender.hasPermission(ADMIN_PERMS)) {
+            sendAdminCommandsList(sender);
+        }
 
     }
 

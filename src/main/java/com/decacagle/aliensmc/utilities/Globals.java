@@ -124,7 +124,10 @@ public class Globals {
         }
 
         psp.setPlaying(true);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> psp.setPlaying(false), 1200L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            psp.setPlaying(false);
+            psp.destroy();
+        }, 1200L);
 
         for (int i = 0; i < 10; i++) {
             if (i % 4 != 0) {

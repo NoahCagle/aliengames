@@ -2,6 +2,7 @@ package com.decacagle.aliensmc.utilities;
 
 import com.decacagle.aliensmc.AliensGames;
 import com.decacagle.aliensmc.games.Game;
+import com.decacagle.aliensmc.games.SpecialGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -23,6 +24,7 @@ public class GameManager {
     public void stopGame() {
         if (currentGame != null) {
             currentGame.endGame();
+            currentGame.cleanup();
             currentGame = null;
         }
     }
@@ -34,7 +36,7 @@ public class GameManager {
         Component announceMessage = Component.text()
                 .append(Component.text("NEW GAME STARTING", NamedTextColor.GOLD, TextDecoration.UNDERLINED, TextDecoration.BOLD))
                 .append(Component.newline())
-                .append(Component.text(game.host.getName() + " is preparing to host a game of " + game.PRETTY_TITLE + "!", NamedTextColor.GREEN))
+                .append(Component.text(game.host.getName() + " is preparing to host a " + (game instanceof SpecialGame ? ("") : ("game of ")) + game.PRETTY_TITLE + "!", NamedTextColor.GREEN))
                 .append(Component.newline())
                 .append(Component.text("To join, use the ", NamedTextColor.GREEN))
                 .append(Component.text("/agames join", NamedTextColor.GREEN, TextDecoration.BOLD))

@@ -5,12 +5,17 @@ import com.decacagle.aliensmc.listeners.SquidGameEvents;
 import com.decacagle.aliensmc.utilities.GameManager;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.logging.Logger;
 
 public final class AliensGames extends JavaPlugin {
+
+    public Economy economy;
 
     public Logger logger;
     public GameManager gameManager;
@@ -22,11 +27,27 @@ public final class AliensGames extends JavaPlugin {
         logger = this.getLogger();
         logger.info("AliensGames plugin has launched successfully!");
 
-        congratulationsSong = NBSDecoder.parse(new File("./plugins/Songs/congratulations.nbs"));
+        if (!economySetup()) {
+            getLogger().severe("Disabled due to no Vault dependency found!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        } else {
+            getLogger().info("Successfully hooked with Economy: " + economy.getName());
+        }
+
+        if (!noteblockAPISetup()) {
+            getLogger().severe("Disabled due to no NoteblockAPI dependency found!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        } else {
+            getLogger().info("Initializing Noteblock Studio songs with Noteblock API!");
+
+            congratulationsSong = NBSDecoder.parse(new File("./plugins/Songs/congratulations.nbs"));
+
+        }
 
         gameManager = new GameManager(this);
 
-        registerCommand("alienkey", new KeyCommand());
         registerCommand("agames", new GamesCommand(this, gameManager));
 
         getServer().getPluginManager().registerEvents(new SquidGameEvents(this, gameManager), this);
@@ -35,6 +56,31 @@ public final class AliensGames extends JavaPlugin {
     @Override
     public void onDisable() {
         logger.info("AliensGames plugin has been disabled!");
+    }
+
+    private boolean noteblockAPISetup() {
+        boolean noteblockAPIfound = true;
+        if (!Bukkit.getPluginManager().isPluginEnabled("NoteBlockAPI")) {
+            getLogger().severe("*** NoteBlockAPI is not installed or not enabled. ***");
+            noteblockAPIfound = false;
+        }
+        return noteblockAPIfound;
+    }
+
+    private boolean economySetup() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer()
+                .getServicesManager()
+                .getRegistration(Economy.class);
+
+        if (rsp == null) {
+            return false;
+        }
+
+        economy = rsp.getProvider();
+        return economy != null;
     }
 
 }
