@@ -121,6 +121,8 @@ public class GamesCommand implements BasicCommand {
 
                             currentGame.reportPlayerDeparture(player);
 
+                            player.teleport(player.getWorld().getSpawnLocation());
+
                             if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                                 gameManager.reportHostDisconnect();
                             }

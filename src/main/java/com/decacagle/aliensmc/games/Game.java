@@ -28,6 +28,8 @@ public class Game {
     public List<Player> participants = new ArrayList<Player>();
     public List<Player> spectators = new ArrayList<Player>();
 
+    public Location boundsA, boundsB;
+
     public Location spawnpoint;
     public AliensGames plugin;
     public Player host;
@@ -101,10 +103,6 @@ public class Game {
         for (Player p : participants) {
             Globals.fullyClearInventory(p);
         }
-    }
-
-    public void reportPlayerDisconnect(Player player) {
-
     }
 
     public void healAll() {

@@ -34,6 +34,8 @@ public class GlassBridge extends Game {
     public GlassBridge(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleGB), plugin.config.spawnpointXGB, plugin.config.spawnpointYGB, plugin.config.spawnpointZGB, (float) plugin.config.spawnpointYawGB, (float) plugin.config.spawnpointPitchGB), plugin, host, plugin.config.minimumPlayersGB);
         this.world = spawnpoint.getWorld();
+        this.boundsA = new Location(world, plugin.config.boundsAXGB, plugin.config.boundsAYGB, plugin.config.boundsAZGB);
+        this.boundsB = new Location(world, plugin.config.boundsBXGB, plugin.config.boundsBYGB, plugin.config.boundsBZGB);
         this.bridgeSpawnpoint = new Location(world, plugin.config.bridgeSpawnpointXGB, plugin.config.bridgeSpawnpointYGB, plugin.config.bridgeSpawnpointZGB, (float) plugin.config.bridgeSpawnpointYawGB, (float) plugin.config.bridgeSpawnpointPitchGB);
         this.vipLoungeSpawnpoint = new Location(world, plugin.config.vipSpawnpointXGB, plugin.config.vipSpawnpointYGB, plugin.config.vipSpawnpointZGB, (float) plugin.config.vipSpawnpointYawGB, (float) plugin.config.vipSpawnpointPitchGB);
         this.gameDurationSeconds = plugin.config.gameDurationSecondsGB;
@@ -163,6 +165,7 @@ public class GlassBridge extends Game {
                     if (p.player.getZ() >= 1284) {
                         p.crossed = true;
                         p.timeCrossed = (int) secondsPassed;
+                        spectators.add(p.player);
                         updatePlayerLine(p);
                     }
                 }
@@ -322,6 +325,7 @@ public class GlassBridge extends Game {
         for (GlassBridgePlayer p : players) {
             if (p.player.getUniqueId().compareTo(eliminated.getUniqueId()) == 0) {
                 p.eliminated = true;
+                spectators.add(p.player);
 
                 Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
                 Component subtitle = Component.text("You can watch the rest of the game from the VIP lounge", NamedTextColor.GOLD);
@@ -406,8 +410,6 @@ public class GlassBridge extends Game {
 
         Globals.fullyClearInventory(player);
 
-        player.teleport(world.getSpawnLocation());
-
         if (gameRunning) {
 
             GlassBridgePlayer gbPlayer = null;
@@ -426,6 +428,8 @@ public class GlassBridge extends Game {
                 gbPlayer.takenFirstLeap = true;
                 gbPlayer.connected = false;
                 gbPlayer.points = 0;
+
+                spectators.add(gbPlayer.player);
 
                 updatePlayerLine(gbPlayer);
 

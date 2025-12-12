@@ -42,6 +42,8 @@ public class SpecialGame extends Game {
     public SpecialGame(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleSG), plugin.config.spawnpointXSG, plugin.config.spawnpointYSG, plugin.config.spawnpointZSG, (float) plugin.config.spawnpointYawSG, (float) plugin.config.spawnpointPitchSG), plugin, host, plugin.config.minimumPlayersSG);
         this.world = spawnpoint.getWorld();
+        this.boundsA = new Location(world, plugin.config.boundsAXSG, plugin.config.boundsAYSG, plugin.config.boundsAZSG);
+        this.boundsB = new Location(world, plugin.config.boundsBXSG, plugin.config.boundsBYSG, plugin.config.boundsBZSG);
         this.gameDurationSeconds = plugin.config.gameDurationSecondsSG;
         this.timeBeforeStart = plugin.config.timeBeforeStartSecondsSG;
         this.prettyTitle = plugin.config.prettyTitleSG;
@@ -593,8 +595,6 @@ public class SpecialGame extends Game {
 
         Globals.fullyClearInventory(player);
 
-        player.teleport(world.getSpawnLocation());
-
         if (gameRunning) {
 
             SpecialGamePlayer sgPlayer = null;
@@ -612,6 +612,8 @@ public class SpecialGame extends Game {
                 sgPlayer.eliminated = true;
                 sgPlayer.connected = false;
                 sgPlayer.points = 0;
+
+                spectators.add(sgPlayer.player);
 
                 updatePlayerLine(sgPlayer);
 
@@ -649,6 +651,8 @@ public class SpecialGame extends Game {
 
         if (sgPlayer != null) {
             sgPlayer.eliminated = true;
+
+            spectators.add(sgPlayer.player);
 
             Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
             Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
@@ -695,6 +699,8 @@ public class SpecialGame extends Game {
 
             // give points
             killedSGP.eliminated = true;
+
+            spectators.add(killedSGP.player);
 
             killerSGP.kills++;
             killerSGP.killedPlayers.add(killed);

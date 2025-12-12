@@ -38,6 +38,9 @@ public class Globals {
     public static Vector secondPlaceLocation = new Vector(183, 266, 1110);
     public static Vector thirdPlaceLocation = new Vector(187, 265, 1110);
 
+    private static final int distanceFromPodium = 8;
+    private static final double startingPosRadians = -(Math.PI / 8);
+
     public static boolean displayNameEquals(ItemStack item, String targetName) {
         ItemMeta meta = item.getItemMeta();
 
@@ -106,6 +109,9 @@ public class Globals {
         psp.setTargetLocation(firstPlaceLoc);
         psp.setDistance(16);
 
+        double radiansBetweenPlayers = (Math.PI / 4) / (players.size() - winners);
+        int loserIndex = 0;
+
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
 
@@ -118,7 +124,8 @@ public class Globals {
             } else if (i == 2 && winners >= 3) {
                 player.teleport(thirdPlaceLoc);
             } else {
-                player.teleport(leaderboardLoc);
+                teleportToLeaderboard(player, world, radiansBetweenPlayers, loserIndex);
+                loserIndex++;
             }
             psp.addPlayer(player);
         }
@@ -155,6 +162,19 @@ public class Globals {
 
     }
 
+    private static void teleportToLeaderboard(Player player, World world, double distanceBetweenPlayers, int loserIndex) {
+        // coords based on unit circle
+        double x = Math.cos(startingPosRadians + (distanceBetweenPlayers * loserIndex)) * distanceFromPodium;
+        double y = Math.sin(startingPosRadians + (distanceBetweenPlayers * loserIndex)) * distanceFromPodium;
+
+        double angleDegrees = (180.0 / Math.PI) * (startingPosRadians + (distanceBetweenPlayers * loserIndex));
+
+        Location finalLoc = new Location(world, firstPlaceLocation.getX() + y, firstPlaceLocation.getY(), firstPlaceLocation.getZ() + x, (float) (180 - angleDegrees), 0);
+
+        player.teleport(finalLoc);
+
+    }
+
     public static boolean checkParsable(String num) {
         try {
             Integer.parseInt(num);
@@ -162,6 +182,30 @@ public class Globals {
             return false;
         }
         return true;
+    }
+
+    public static boolean playerWithinBounds(Player player, Location cuboidPoint1, Location cuboidPoint2) {
+        if (!player.getWorld().equals(cuboidPoint1.getWorld())) return false;
+
+        Location playerLoc = player.getLocation();
+
+        double x = playerLoc.getX();
+        double y = playerLoc.getY();
+        double z = playerLoc.getZ();
+
+        double x1 = Math.min(cuboidPoint1.getX(), cuboidPoint2.getX());
+        double x2 = Math.max(cuboidPoint1.getX(), cuboidPoint2.getX());
+
+        double y1 = Math.min(cuboidPoint1.getY(), cuboidPoint2.getY());
+        double y2 = Math.max(cuboidPoint1.getY(), cuboidPoint2.getY());
+
+        double z1 = Math.min(cuboidPoint1.getZ(), cuboidPoint2.getZ());
+        double z2 = Math.max(cuboidPoint1.getZ(), cuboidPoint2.getZ());
+
+        return x >= x1 && x <= x2
+                && y >= y1 && y <= y2
+                && z >= z1 && z <= z2;
+
     }
 
 }

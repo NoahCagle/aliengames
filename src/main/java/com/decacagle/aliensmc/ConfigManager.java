@@ -21,6 +21,7 @@ public class ConfigManager {
     public int timeBeforeStartSecondsRLGL;
     public int gracePeriodTicksRLGL;
     public double spawnpointXRLGL, spawnpointYRLGL, spawnpointZRLGL, spawnpointYawRLGL, spawnpointPitchRLGL;
+    public double boundsAXRLGL, boundsAYRLGL, boundsAZRLGL, boundsBXRLGL, boundsBYRLGL, boundsBZRLGL;
     public String prettyTitleRLGL;
 
     // Hide and Seek Values
@@ -31,6 +32,7 @@ public class ConfigManager {
     public double spawnpointXHNS, spawnpointYHNS, spawnpointZHNS, spawnpointYawHNS, spawnpointPitchHNS;
     public double mapLocXHNS, mapLocYHNS, mapLocZHNS, mapLocYawHNS, mapLocPitchHNS;
     public double escapeXHNS, escapeYHNS, escapeZHNS;
+    public double boundsAXHNS, boundsAYHNS, boundsAZHNS, boundsBXHNS, boundsBYHNS, boundsBZHNS;
     public String prettyTitleHNS;
 
     // Glass Bridge Values
@@ -40,6 +42,7 @@ public class ConfigManager {
     public double spawnpointXGB, spawnpointYGB, spawnpointZGB, spawnpointYawGB, spawnpointPitchGB;
     public double bridgeSpawnpointXGB, bridgeSpawnpointYGB, bridgeSpawnpointZGB, bridgeSpawnpointYawGB, bridgeSpawnpointPitchGB;
     public double vipSpawnpointXGB, vipSpawnpointYGB, vipSpawnpointZGB, vipSpawnpointYawGB, vipSpawnpointPitchGB;
+    public double boundsAXGB, boundsAYGB, boundsAZGB, boundsBXGB, boundsBYGB, boundsBZGB;
     public String prettyTitleGB;
 
     // Special Game Values
@@ -49,6 +52,7 @@ public class ConfigManager {
     public int gameDurationSecondsSG;
     public int timeBeforeStartSecondsSG;
     public double spawnpointXSG, spawnpointYSG, spawnpointZSG, spawnpointYawSG, spawnpointPitchSG;
+    public double boundsAXSG, boundsAYSG, boundsAZSG, boundsBXSG, boundsBYSG, boundsBZSG;
     public String prettyTitleSG;
 
     public ConfigManager(AliensGames plugin) {
@@ -76,6 +80,12 @@ public class ConfigManager {
         this.spawnpointZRLGL = d("spawnpoint_z_rlgl");
         this.spawnpointYawRLGL = d("spawnpoint_yaw_rlgl");
         this.spawnpointPitchRLGL = d("spawnpoint_pitch_rlgl");
+        this.boundsAXRLGL = d("bounds_a_x_rlgl");
+        this.boundsAYRLGL = d("bounds_a_y_rlgl");
+        this.boundsAZRLGL = d("bounds_a_z_rlgl");
+        this.boundsBXRLGL = d("bounds_b_x_rlgl");
+        this.boundsBYRLGL = d("bounds_b_y_rlgl");
+        this.boundsBZRLGL = d("bounds_b_z_rlgl");
         this.prettyTitleRLGL = s("pretty_title_rlgl");
 
         // Hide and Seek Values
@@ -96,6 +106,12 @@ public class ConfigManager {
         this.escapeXHNS = d("escape_x_hns");
         this.escapeYHNS = d("escape_y_hns");
         this.escapeZHNS = d("escape_z_hns");
+        this.boundsAXHNS = d("bounds_a_x_hns");
+        this.boundsAYHNS = d("bounds_a_y_hns");
+        this.boundsAZHNS = d("bounds_a_z_hns");
+        this.boundsBXHNS = d("bounds_b_x_hns");
+        this.boundsBYHNS = d("bounds_b_y_hns");
+        this.boundsBZHNS = d("bounds_b_z_hns");
         this.prettyTitleHNS = s("pretty_title_hns");
 
         // Glass Bridge Values
@@ -117,6 +133,12 @@ public class ConfigManager {
         this.vipSpawnpointZGB = d("vip_spawnpoint_z_gb");
         this.vipSpawnpointYawGB = d("vip_spawnpoint_yaw_gb");
         this.vipSpawnpointPitchGB = d("vip_spawnpoint_pitch_gb");
+        this.boundsAXGB = d("bounds_a_x_gb");
+        this.boundsAYGB = d("bounds_a_y_gb");
+        this.boundsAZGB = d("bounds_a_z_gb");
+        this.boundsBXGB = d("bounds_b_x_gb");
+        this.boundsBYGB = d("bounds_b_y_gb");
+        this.boundsBZGB = d("bounds_b_z_gb");
         this.prettyTitleGB = s("pretty_title_gb");
 
         // Special Game Settings
@@ -130,6 +152,12 @@ public class ConfigManager {
         this.spawnpointZSG = d("spawnpoint_z_sg");
         this.spawnpointYawSG = d("spawnpoint_yaw_sg");
         this.spawnpointPitchSG = d("spawnpoint_pitch_sg");
+        this.boundsAXSG = d("bounds_a_x_sg");
+        this.boundsAYSG = d("bounds_a_y_sg");
+        this.boundsAZSG = d("bounds_a_z_sg");
+        this.boundsBXSG = d("bounds_b_x_sg");
+        this.boundsBYSG = d("bounds_b_y_sg");
+        this.boundsBZSG = d("bounds_b_z_sg");
         this.prettyTitleSG = s("pretty_title_sg");
 
         plugin.logger.info("AliensGames config loaded!");

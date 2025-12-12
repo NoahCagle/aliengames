@@ -17,6 +17,12 @@ spawnpoint_y_rlgl: 125
 spawnpoint_z_rlgl: 1085
 spawnpoint_yaw_rlgl: -180
 spawnpoint_pitch_rlgl: 0
+bounds_a_x_rlgl: 1004
+bounds_a_y_rlgl: 112
+bounds_a_z_rlgl: 1107
+bounds_b_x_rlgl: 925
+bounds_b_y_rlgl: 168
+bounds_b_z_rlgl: 984
 pretty_title_rlgl: "Red Light Green Light"
 
 # Hide and Seek Settings
@@ -37,6 +43,12 @@ map_loc_pitch_hns: 0
 escape_x_hns: 407
 escape_y_hns: 227
 escape_z_hns: 992
+bounds_a_x_hns: 131
+bounds_a_y_hns: 159
+bounds_a_z_hns: 1165
+bounds_b_x_hns: 474
+bounds_b_y_hns: 279
+bounds_b_z_hns: 859
 pretty_title_hns: "Hide and Seek"
 
 # Glass Bridge Settings
@@ -58,6 +70,12 @@ vip_spawnpoint_y_gb: 95
 vip_spawnpoint_z_gb: 1246.5
 vip_spawnpoint_yaw_gb: 90
 vip_spawnpoint_pitch_gb: 0
+bounds_a_x_gb: 1038
+bounds_a_y_gb: -11
+bounds_a_z_gb: 1313
+bounds_b_x_gb: 884
+bounds_b_y_gb: 142
+bounds_b_z_gb: 1128
 pretty_title_gb: "Glass Bridge"
 
 # Special Game Settings
@@ -71,4 +89,10 @@ spawnpoint_y_sg: 17
 spawnpoint_z_sg: 1163
 spawnpoint_yaw_sg: -135
 spawnpoint_pitch_sg: 0
+bounds_a_x_sg: 718
+bounds_a_y_sg: 64
+bounds_a_z_sg: 1107
+bounds_b_x_sg: 817
+bounds_b_y_sg: -4
+bounds_b_z_sg: 1210
 pretty_title_sg: "Special Game"

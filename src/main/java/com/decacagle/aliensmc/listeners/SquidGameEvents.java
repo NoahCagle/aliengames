@@ -108,6 +108,27 @@ public class SquidGameEvents implements Listener {
             }
         }
 
+        // constant checking bounds no matter what
+        if (gameManager.getCurrentGame() != null) {
+            Game game = gameManager.getCurrentGame();
+
+            if (Globals.playerInList(player, game.participants) && !Globals.playerInList(player, game.spectators)) {
+
+                if (!Globals.playerWithinBounds(player, game.boundsA, game.boundsB)) {
+
+                    player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
+                    game.reportPlayerDeparture(player);
+
+                    if (player.getUniqueId().compareTo(game.host.getUniqueId()) == 0) {
+                        gameManager.reportHostDisconnect();
+                    }
+
+                }
+
+            }
+
+        }
+
     }
 
     // Hide and Seek events
@@ -348,6 +369,8 @@ public class SquidGameEvents implements Listener {
             if (Globals.playerInList(player, currentGame.participants)) {
 
                 currentGame.reportPlayerDeparture(player);
+
+                player.teleport(player.getWorld().getSpawnLocation());
 
                 if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
 

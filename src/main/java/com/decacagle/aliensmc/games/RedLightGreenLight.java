@@ -61,6 +61,8 @@ public class RedLightGreenLight extends Game {
 
     public RedLightGreenLight(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleRLGL), plugin.config.spawnpointXRLGL, plugin.config.spawnpointYRLGL, plugin.config.spawnpointZRLGL, (float) plugin.config.spawnpointYawRLGL, (float) plugin.config.spawnpointPitchRLGL), plugin, host, plugin.config.minimumPlayersRLGL);
+        this.boundsA = new Location(world, plugin.config.boundsAXRLGL, plugin.config.boundsAYRLGL, plugin.config.boundsAZRLGL);
+        this.boundsB = new Location(world, plugin.config.boundsBXRLGL, plugin.config.boundsBYRLGL, plugin.config.boundsBZRLGL);
         this.gameDurationSeconds = plugin.config.gameDurationSecondsRLGL;
         this.gameCountdown = this.gameDurationSeconds;
         this.minToggleTime = plugin.config.minimumToggleTimeSecondsRLGL;
@@ -250,6 +252,8 @@ public class RedLightGreenLight extends Game {
 
         player.eliminated = true;
 
+        spectators.add(player.player);
+
         int randomDelay = (int) (Math.random() * 2);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -420,8 +424,6 @@ public class RedLightGreenLight extends Game {
 
         Globals.fullyClearInventory(player);
 
-        player.teleport(world.getSpawnLocation());
-
         if (gameRunning) {
 
             RedLightGreenLightPlayer rlglPlayer = null;
@@ -439,6 +441,8 @@ public class RedLightGreenLight extends Game {
                 rlglPlayer.eliminated = true;
                 rlglPlayer.connected = false;
                 rlglPlayer.points = 0;
+
+                spectators.add(rlglPlayer.player);
 
                 updatePlayerLine(rlglPlayer);
 

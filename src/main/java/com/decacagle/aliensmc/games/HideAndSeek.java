@@ -359,6 +359,8 @@ public class HideAndSeek extends Game {
 
     public HideAndSeek(AliensGames plugin, Player host) {
         super(new Location(plugin.getServer().getWorld(plugin.config.gameWorldTitleHNS), plugin.config.spawnpointXHNS, plugin.config.spawnpointYHNS, plugin.config.spawnpointZHNS, (float) plugin.config.spawnpointYawHNS, (float) plugin.config.spawnpointPitchHNS), plugin, host, plugin.config.minimumPlayersHNS);
+        this.boundsA = new Location(world, plugin.config.boundsAXHNS, plugin.config.boundsAYHNS, plugin.config.boundsAZHNS);
+        this.boundsB = new Location(world, plugin.config.boundsBXHNS, plugin.config.boundsBYHNS, plugin.config.boundsBZHNS);
         this.mapLoc = new Location(spawnpoint.getWorld(), plugin.config.mapLocXHNS, plugin.config.mapLocYHNS, plugin.config.mapLocZHNS, (float) plugin.config.mapLocYawHNS, (float) plugin.config.mapLocPitchHNS);
         this.escapePoint = new Vector(plugin.config.escapeXHNS, plugin.config.escapeYHNS, plugin.config.escapeZHNS);
         this.gameDurationSeconds = plugin.config.gameDurationSecondsHNS;
@@ -624,6 +626,8 @@ public class HideAndSeek extends Game {
                 p.escapeTime = secondsPassed;
                 p.player.setGameMode(GameMode.SPECTATOR);
 
+                spectators.add(p.player);
+
                 Component title = Component.text("You have escaped!", NamedTextColor.GREEN, TextDecoration.BOLD);
                 Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
 
@@ -685,6 +689,7 @@ public class HideAndSeek extends Game {
 
         if (hnsPlayer != null) {
             hnsPlayer.eliminated = true;
+            spectators.add(hnsPlayer.player);
 
             Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
             Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
@@ -733,6 +738,7 @@ public class HideAndSeek extends Game {
 
             // give points
             killedHNSP.eliminated = true;
+            spectators.add(killedHNSP.player);
 
             killerHNSP.kills++;
             killerHNSP.killedPlayers.add(killed);
@@ -1017,8 +1023,6 @@ public class HideAndSeek extends Game {
 
         Globals.fullyClearInventory(player);
 
-        player.teleport(world.getSpawnLocation());
-
         if (gameRunning) {
 
             HideAndSeekPlayer hnsPlayer = null;
@@ -1047,6 +1051,8 @@ public class HideAndSeek extends Game {
                 hnsPlayer.connected = false;
                 hnsPlayer.kills = 0;
                 hnsPlayer.points = 0;
+
+                spectators.add(hnsPlayer.player);
 
                 updatePlayerLine(hnsPlayer);
 
