@@ -1,6 +1,7 @@
 package com.decacagle.aliensmc.listeners;
 
 import com.decacagle.aliensmc.AliensGames;
+import com.decacagle.aliensmc.commands.GamesCommand;
 import com.decacagle.aliensmc.games.*;
 import com.decacagle.aliensmc.games.blocks.GlassBridgeSpace;
 import com.decacagle.aliensmc.utilities.GameManager;
@@ -83,23 +84,72 @@ public class SquidGameEvents implements Listener {
                             double x = player.getX();
                             if (x >= 967.025 && x <= 967.925) {
                                 Location l = new Location(gb.world, (int) x, 95, (int) player.getZ());
-                                if (l.getBlock().getType() != Material.AIR) {
+                                if (l.getBlock().getType() == Material.END_ROD) {
                                     gb.world.setBlockData((int) x, 95, (int) player.getZ(), Material.AIR.createBlockData());
+                                }
+                                for (int za = 1; za < 5; za++) {
+                                    Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
+                                    Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
+                                    if (rodNorth.getZ() < 1280) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
+                                    }
+                                    if (rodSouth.getZ() > 1210) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
+                                    }
                                 }
                             } else if (x >= 970.025 && x <= 970.925) {
                                 Location l = new Location(gb.world, (int) x, 95, (int) player.getZ());
-                                if (l.getBlock().getType() != Material.AIR) {
+                                if (l.getBlock().getType() == Material.END_ROD) {
                                     gb.world.setBlockData((int) x, 95, (int) player.getZ(), Material.AIR.createBlockData());
+                                }
+                                for (int za = 1; za < 5; za++) {
+                                    Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
+                                    Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
+                                    if (rodNorth.getZ() < 1280) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        rodNorth.getBlock().setType(Material.AIR);
+                                    }
+                                    if (rodSouth.getZ() > 1210) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
+                                    }
                                 }
                             } else if (x >= 971.025 && x <= 971.925) {
                                 Location l = new Location(gb.world, (int) x, 95, (int) player.getZ());
-                                if (l.getBlock().getType() != Material.AIR) {
+                                if (l.getBlock().getType() == Material.END_ROD) {
                                     gb.world.setBlockData((int) x, 95, (int) player.getZ(), Material.AIR.createBlockData());
+                                }
+                                for (int za = 1; za < 5; za++) {
+                                    Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
+                                    Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
+                                    if (rodNorth.getZ() < 1280) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
+
+                                    }
+                                    if (rodSouth.getZ() > 1210) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
+                                    }
                                 }
                             } else if (x >= 974.025 && x <= 974.925) {
                                 Location l = new Location(gb.world, (int) x, 95, (int) player.getZ());
-                                if (l.getBlock().getType() != Material.AIR) {
+                                if (l.getBlock().getType() == Material.END_ROD) {
                                     gb.world.setBlockData((int) x, 95, (int) player.getZ(), Material.AIR.createBlockData());
+                                }
+                                for (int za = 1; za < 5; za++) {
+                                    Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
+                                    Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
+                                    if (rodNorth.getZ() < 1280) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
+                                    }
+                                    if (rodSouth.getZ() > 1210) {
+                                        plugin.logger.info("ROD IN BOUNDS");
+                                        gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
+                                    }
                                 }
                             }
                         }
@@ -112,19 +162,21 @@ public class SquidGameEvents implements Listener {
         if (gameManager.getCurrentGame() != null) {
             Game game = gameManager.getCurrentGame();
 
-            if (Globals.playerInList(player, game.participants) && !Globals.playerInList(player, game.spectators)) {
+            if (!game.gameEnded) {
+                if (Globals.playerInList(player, game.participants) && !Globals.playerInList(player, game.spectators)) {
 
-                if (!Globals.playerWithinBounds(player, game.boundsA, game.boundsB)) {
+                    if (!Globals.playerWithinBounds(player, game.boundsA, game.boundsB)) {
 
-                    player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
-                    game.reportPlayerDeparture(player);
+                        player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
+                        game.reportPlayerDeparture(player);
 
-                    if (player.getUniqueId().compareTo(game.host.getUniqueId()) == 0) {
-                        gameManager.reportHostDisconnect();
+                        if (player.getUniqueId().compareTo(game.host.getUniqueId()) == 0) {
+                            gameManager.reportHostDisconnect();
+                        }
+
                     }
 
                 }
-
             }
 
         }
@@ -281,6 +333,45 @@ public class SquidGameEvents implements Listener {
                 }
             }
         }
+
+        // block non-operators from opening the frontman door
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            plugin.logger.info("Right click block action!");
+            Block b = event.getClickedBlock();
+            if (b != null) {
+                plugin.logger.info("b != null!");
+                Location blockLoc = b.getLocation();
+                if (blockLoc.getWorld().getName().equalsIgnoreCase("squidgame")) {
+                    plugin.logger.info("world.getname equals \"squidgame\"");
+                    int x = (int) blockLoc.getX();
+                    int y = (int) blockLoc.getY();
+                    int z = (int) blockLoc.getZ();
+
+                    if ((x == 1073 && y == 47 && z == 1203) || (x == 1072 && y == 47 && z == 1199)) {
+                        plugin.logger.info("block is in one of the two locations");
+                        Player player = event.getPlayer();
+
+                        if (player.hasPermission(GamesCommand.ADMIN_PERMS)) {
+                            plugin.logger.info("player has perms!");
+                            player.sendRichMessage("<gray>Hello, Frontman.");
+
+                        } else {
+                            plugin.logger.info("player has no perms!");
+                            event.setCancelled(true);
+                            player.sendRichMessage("<red>Only the Frontman has the key to this door.");
+
+                        }
+
+                    } else {
+                        plugin.logger.info("location: " + x + ", " + y + ", " + z);
+                    }
+
+                }
+
+            }
+        }
+
     }
 
     @EventHandler
@@ -288,7 +379,8 @@ public class SquidGameEvents implements Listener {
         if (gameManager.getCurrentGame() instanceof SpecialGame sg) {
             Player player = event.getPlayer();
             if (Globals.playerInList(player, sg.participants)) {
-                event.setCancelled(true);
+                if (!sg.placedBlockLocations.contains(event.getBlock().getLocation()))
+                    event.setCancelled(true);
             }
         }
     }

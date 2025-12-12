@@ -191,11 +191,15 @@ public class RedLightGreenLight extends Game {
     }
 
     public void goToLeaderboard() {
+        this.gameEnded = true;
+
         plugin.logger.info("scoring and going to leaderboard");
 
         sortPlayersByTimeCrossed();
 
-        broadcastMessageToAllPlayers("<underlined><gold><bold>Red Light Green Light Rankings\n");
+        broadcastMessageToAllPlayers("<underlined><green><bold>Red Light Green Light Rankings\n");
+
+        healAll();
 
         List<Player> orderedPlayers = new ArrayList<Player>();
 

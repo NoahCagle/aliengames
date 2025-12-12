@@ -6,6 +6,7 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -22,7 +23,7 @@ import java.util.Map;
 // TODO: clean this shit up what the fuck have i done here...
 public class GamesCommand implements BasicCommand {
 
-    private final String ADMIN_PERMS = "aliensgames.agames.admin";
+    public static final String ADMIN_PERMS = "aliensgames.agames.admin";
 
     private boolean showingKeyLocs = false;
 
@@ -123,6 +124,8 @@ public class GamesCommand implements BasicCommand {
 
                             player.teleport(player.getWorld().getSpawnLocation());
 
+                            player.setGameMode(GameMode.ADVENTURE);
+
                             if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                                 gameManager.reportHostDisconnect();
                             }
@@ -221,6 +224,15 @@ public class GamesCommand implements BasicCommand {
                             } else {
                                 sender.sendRichMessage("<red>Correct usage: /agames admin delpoints <username>");
                             }
+                        } else if (args[1].equalsIgnoreCase("debug")) {
+                            sender.sendRichMessage("<yellow>Note: this command does NOT change the debug_mode key in config.yml");
+                            if (plugin.config.debugMode) {
+                                plugin.config.debugMode = false;
+                                sender.sendRichMessage("<yellow>Debug mode has been turned off!");
+                            } else {
+                                plugin.config.debugMode = true;
+                                sender.sendRichMessage("<yellow>Debug mode has been turned on!");
+                            }
                         } else {
                             sendAdminCommandsList(sender);
                         }
@@ -257,7 +269,7 @@ public class GamesCommand implements BasicCommand {
             if (args[0].equalsIgnoreCase("host"))
                 return List.of("rlgl", "hns", "gb", "sg");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
-                return List.of("forcestop", "keylocs", "togglelights", "reload", "setpoints", "delpoints");
+                return List.of("forcestop", "keylocs", "togglelights", "reload", "setpoints", "delpoints", "debug");
             }
         }
 
@@ -280,6 +292,7 @@ public class GamesCommand implements BasicCommand {
         sender.sendRichMessage("<red>/agames admin reload - Reload values in config.yml");
         sender.sendRichMessage("<red>/agames admin setpoints - Manually set the value of a player's points");
         sender.sendRichMessage("<red>/agames admin delpoints - Manually delete a player from the points record");
+        sender.sendRichMessage("<red>/agames admin debug - Toggle debug mode (ask Cagle for more details)");
     }
 
     public void sendAllCommandsList(CommandSender sender) {
@@ -320,7 +333,7 @@ public class GamesCommand implements BasicCommand {
     public void sendPointsLeaderboard(CommandSender sender) {
         List<Map.Entry<String, Integer>> leaderboard = plugin.pointsManager.getTopPlayers(10);
 
-        sender.sendRichMessage("<gold><bold><underline>Aliens Games Top 10 Leaderboard\n");
+        sender.sendRichMessage("<gold><bold><underlined>Aliens Games Top 10 Leaderboard\n");
 
         for (int i = 0; i < leaderboard.size(); i++) {
             Map.Entry<String, Integer> entry = leaderboard.get(i);

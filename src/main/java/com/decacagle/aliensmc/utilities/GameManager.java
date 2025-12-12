@@ -6,6 +6,7 @@ import com.decacagle.aliensmc.games.SpecialGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class GameManager {
@@ -65,6 +66,7 @@ public class GameManager {
         if (currentGame != null) {
             for (Player p : currentGame.participants) {
                 p.teleport(currentGame.world.getSpawnLocation());
+                p.setGameMode(GameMode.ADVENTURE);
                 p.sendRichMessage("<red><bold>This mini-game has been cancelled by the host.");
             }
             currentGame.gameRunning = false;

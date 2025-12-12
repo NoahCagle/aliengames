@@ -204,7 +204,11 @@ public class GlassBridge extends Game {
     }
 
     public void goToLeaderboard() {
+        this.gameEnded = true;
+
         sortPlayersByTimeCrossed();
+
+        healAll();
 
         broadcastMessageToAllPlayers("<underlined><green><bold>Glass Bridge Rankings\n");
 
@@ -220,7 +224,7 @@ public class GlassBridge extends Game {
 
             if (p.crossed) {
                 numWinners++;
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold</green><white> - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold></green><white> - " + p.points + " points");
                 plugin.pointsManager.addPoints(p.player, p.points);
             } else {
                 broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - 0 points");

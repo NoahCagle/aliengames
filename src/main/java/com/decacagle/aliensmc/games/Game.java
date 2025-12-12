@@ -35,6 +35,7 @@ public class Game {
     public Player host;
 
     public boolean gameRunning = false;
+    public boolean gameEnded = false;
 
     public String prettyTitle;
 

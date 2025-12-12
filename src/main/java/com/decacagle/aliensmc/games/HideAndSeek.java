@@ -426,6 +426,8 @@ public class HideAndSeek extends Game {
     }
 
     public void goToLeaderboard() {
+        this.gameEnded = true;
+
         givePointsToRemainingHiders();
 
         List<HideAndSeekPlayer> finalResults = sortPlayersByPoints();
@@ -441,6 +443,8 @@ public class HideAndSeek extends Game {
             Player player = p.player;
             player.setGameMode(GameMode.ADVENTURE);
             Globals.fullyClearInventory(player);
+
+            healAll();
 
             if (p.points > 0 && !p.eliminated) numWinners++;
             orderedPlayers.add(player);

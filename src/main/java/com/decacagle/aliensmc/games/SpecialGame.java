@@ -13,7 +13,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Light;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
@@ -64,8 +66,6 @@ public class SpecialGame extends Game {
         this.gameRunning = true;
         healAll();
         initPlayers();
-        givePlayersEquipment();
-        setGamemode();
         initScoreboard();
         queueGameStart();
     }
@@ -93,6 +93,8 @@ public class SpecialGame extends Game {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 playSoundToAllPlayers(Sound.AMBIENT_CAVE, 1.5f, 1.0f);
                 applyDarknessEffectForAll();
+                givePlayersEquipment();
+                setGamemode();
                 gameStarted = true;
             }, 40);
             Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
@@ -156,6 +158,7 @@ public class SpecialGame extends Game {
     }
 
     public void goToLeaderboard() {
+        this.gameEnded = true;
 
         List<SpecialGamePlayer> finalResults = sortPlayersByPoints();
 
@@ -164,6 +167,8 @@ public class SpecialGame extends Game {
         int numWinners = 0;
 
         broadcastMessageToAllPlayers("<underlined><green><bold>Special Game Rankings\n");
+
+        healAll();
 
         for (int i = 0; i < finalResults.size(); i++) {
             SpecialGamePlayer p = finalResults.get(i);
@@ -209,11 +214,28 @@ public class SpecialGame extends Game {
 
     public void givePlayersEquipment() {
         ItemStack woodenSword = new ItemStack(Material.WOODEN_SWORD);
+        ItemMeta swordMeta = woodenSword.getItemMeta();
+
+        swordMeta.setUnbreakable(true);
+        swordMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+
+        woodenSword.setItemMeta(swordMeta);
+
+        ItemStack woodenPickaxe = new ItemStack(Material.WOODEN_PICKAXE);
+        ItemMeta pickaxeMeta = woodenPickaxe.getItemMeta();
+
+        pickaxeMeta.setUnbreakable(true);
+        pickaxeMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+
+        woodenPickaxe.setItemMeta(pickaxeMeta);
+
         ItemStack walls = new ItemStack(Material.POLISHED_BLACKSTONE_BRICK_WALL, 5);
 
         for (Player p : participants) {
-            p.getInventory().addItem(woodenSword);
-            p.getInventory().addItem(walls);
+            Globals.fullyClearInventory(p);
+            p.getInventory().setItem(0, woodenSword);
+            p.getInventory().setItem(1, walls);
+            p.getInventory().setItem(8, woodenPickaxe);
         }
 
     }
@@ -329,7 +351,7 @@ public class SpecialGame extends Game {
 
         // lanterns over doors at front
         for (int z = 0; z < 3; z++) {
-            Location northLantern = new Location(world, 798, 18, 1138 + z);
+            Location northLantern = new Location(world, 798, 19, 1138 + z);
             Location southLantern = new Location(world, 798, 19, 1177 + z);
 
             northLantern.getBlock().setType(Material.AIR);
@@ -451,7 +473,7 @@ public class SpecialGame extends Game {
 
         // lanterns over doors at front
         for (int z = 0; z < 3; z++) {
-            Location northLantern = new Location(world, 798, 18, 1138 + z);
+            Location northLantern = new Location(world, 798, 19, 1138 + z);
             Location southLantern = new Location(world, 798, 19, 1177 + z);
 
             northLantern.getBlock().setType(Material.SEA_LANTERN);
