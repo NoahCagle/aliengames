@@ -155,4 +155,13 @@ public class Globals {
 
     }
 
+    public static boolean checkParsable(String num) {
+        try {
+            Integer.parseInt(num);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
 }

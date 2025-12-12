@@ -102,24 +102,31 @@ public class SpecialGame extends Game {
         if (gameRunning) {
             int remainingPlayers = playersAlive();
 
-            if (remainingPlayers <= (plugin.config.debugMode ? 0 : 1) || secondsPassed >= gameDurationSeconds) {
+            if (remainingPlayers <= (plugin.config.debugMode ? 0 : 1)) {
+                plugin.logger.info("No more players, ending the game!");
+                endGame();
+            } else if (secondsPassed >= gameDurationSeconds) {
+                plugin.logger.info("Time has run out, ending the game!");
                 endGame();
             }
         }
     }
 
     public void endGame() {
-        gameRunning = false;
+        if (gameRunning) {
+            gameRunning = false;
 
-        givePointsToRemainingPlayers();
+            plugin.logger.info("Ending game!");
 
-        broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN), Component.text(""));
-        removeDarknessEffectForAll();
-        removeNightVisionEffectForAll();
+            givePointsToRemainingPlayers();
 
-        // three seconds delay
-        Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 60);
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN), Component.text(""));
+            removeDarknessEffectForAll();
+            removeNightVisionEffectForAll();
 
+            // three seconds delay
+            Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 60);
+        }
     }
 
     public List<SpecialGamePlayer> sortPlayersByPoints() {
@@ -140,7 +147,7 @@ public class SpecialGame extends Game {
         for (SpecialGamePlayer p : players) {
             if (!p.eliminated && p.connected) {
                 p.player.sendRichMessage("<gold>Survived until the end!");
-                p.player.sendRichMessage("<bold><green>You've earned $5.00!");
+                p.player.sendRichMessage("<bold><green>You've earned 5 points!");
                 p.points += 5;
             }
         }
@@ -168,11 +175,11 @@ public class SpecialGame extends Game {
             String numberColor = i == 0 ? ("<#D4AF37>") : (i == 1 ? ("<#C0C0C0>") : (i == 2 ? ("<#CD7F32>") : ("<gray>")));
 
             if (p.eliminated) {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - $" + p.points);
-                plugin.economy.depositPlayer(p.player, p.points);
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             } else {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Survived</bold></green><white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - $" + p.points);
-                plugin.economy.depositPlayer(p.player, p.points);
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Survived</bold></green><white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             }
         }
 
@@ -216,32 +223,36 @@ public class SpecialGame extends Game {
     }
 
     public void applyDarknessEffectForAll() {
-        for (Player p : participants) {
-            p.addPotionEffect(new PotionEffect(
-                    PotionEffectType.DARKNESS,
-                    20 * gameDurationSeconds,
-                    2
-            ));
+        if (plugin.config.useDarknessEffectSG) {
+            for (Player p : participants) {
+                p.addPotionEffect(new PotionEffect(
+                        PotionEffectType.DARKNESS,
+                        20 * gameDurationSeconds,
+                        0
+                ));
+            }
         }
     }
 
     public void applyNightVisionEffect(SpecialGamePlayer player) {
-        for (Player p : participants) {
-            p.addPotionEffect(new PotionEffect(
-                    PotionEffectType.NIGHT_VISION,
-                    20 * gameDurationSeconds,
-                    2
-            ));
-        }
+        player.player.addPotionEffect(new PotionEffect(
+                PotionEffectType.NIGHT_VISION,
+                20 * gameDurationSeconds,
+                2
+        ));
     }
 
     public void removeDarknessEffect(Player player) {
-        player.removePotionEffect(PotionEffectType.DARKNESS);
+        if (plugin.config.useDarknessEffectSG) {
+            player.removePotionEffect(PotionEffectType.DARKNESS);
+        }
     }
 
     public void removeDarknessEffectForAll() {
-        for (Player p : participants) {
-            p.removePotionEffect(PotionEffectType.DARKNESS);
+        if (plugin.config.useDarknessEffectSG) {
+            for (Player p : participants) {
+                p.removePotionEffect(PotionEffectType.DARKNESS);
+            }
         }
     }
 
@@ -516,6 +527,7 @@ public class SpecialGame extends Game {
             showNameTags();
         }
         removePlacedBlocks();
+        clearAllInventories();
     }
 
     public void updatePlayerLine(SpecialGamePlayer player) {
@@ -688,8 +700,8 @@ public class SpecialGame extends Game {
             killerSGP.killedPlayers.add(killed);
             killerSGP.points += 5;
 
-            killer.sendRichMessage("<gold>You killed " + killed.getName() + "!");
-            killer.sendRichMessage("<bold><green>You've earned $5.00!");
+            killer.sendRichMessage("<green>You killed " + killed.getName() + "!");
+            killer.sendRichMessage("<bold><green>You've earned 5 points!");
 
             updatePlayerLine(killedSGP);
             updatePlayerLine(killerSGP);

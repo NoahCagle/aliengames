@@ -217,10 +217,10 @@ public class GlassBridge extends Game {
 
             if (p.crossed) {
                 numWinners++;
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold</green><white> - $" + p.points);
-                plugin.economy.depositPlayer(p.player, p.points);
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold</green><white> - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             } else {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - $0");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - 0 points");
             }
         }
 
@@ -397,6 +397,7 @@ public class GlassBridge extends Game {
         if (this.scoreboard != null) {
             removeScoreboard();
         }
+        clearAllInventories();
     }
 
     public void reportPlayerDeparture(Player player) {

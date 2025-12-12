@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 // TODO: clean this shit up what the fuck have i done here...
 public class GamesCommand implements BasicCommand {
@@ -164,6 +165,15 @@ public class GamesCommand implements BasicCommand {
                     sender.sendRichMessage("<red><bold>Only players can play mini-games!");
                 }
 
+            } else if (args[0].equalsIgnoreCase("points")) {
+                if (sender instanceof Player player) {
+                    int points = plugin.pointsManager.getPoints(player);
+                    player.sendRichMessage("\n<white>" + player.getName() + " - <green>" + points + " points\n");
+                } else {
+                    sender.sendRichMessage("<red><bold>Only players can earn points!");
+                }
+            } else if (args[0].equalsIgnoreCase("lb")) {
+                sendPointsLeaderboard(sender);
             } else if (args[0].equalsIgnoreCase("admin")) {
                 if (sender.hasPermission(ADMIN_PERMS)) {
                     if (args.length >= 2) {
@@ -186,6 +196,29 @@ public class GamesCommand implements BasicCommand {
                             }
                         } else if (args[1].equalsIgnoreCase("reload")) {
                             plugin.reloadConfig(sender);
+                        } else if (args[1].equalsIgnoreCase("setpoints")) {
+                            if (args.length >= 4) {
+                                String player = args[2];
+                                String value = args[3];
+
+                                if (Globals.checkParsable(value)) {
+                                    plugin.pointsManager.setPoints(player, Integer.parseInt(value));
+                                    sender.sendRichMessage("<yellow>Set value of points." + player + " to " + value + " in points.yml!");
+                                } else {
+                                    sender.sendRichMessage("<red>" + value + " is not a valid integer value!");
+                                }
+
+                            } else {
+                                sender.sendRichMessage("<red>Correct usage: /agames admin setpoints <username> <points>");
+                            }
+                        } else if (args[1].equalsIgnoreCase("delpoints")) {
+                            if (args.length >= 3) {
+                                String player = args[2];
+                                plugin.pointsManager.deletePoints(player);
+                                sender.sendRichMessage("<yellow>Deleted points." + player + " from points.yml!");
+                            } else {
+                                sender.sendRichMessage("<red>Correct usage: /agames admin delpoints <username>");
+                            }
                         } else {
                             sendAdminCommandsList(sender);
                         }
@@ -212,6 +245,8 @@ public class GamesCommand implements BasicCommand {
             completions.add("start");
             completions.add("leave");
             completions.add("cancel");
+            completions.add("lb");
+            completions.add("points");
             if (stack.getSender().hasPermission(ADMIN_PERMS)) {
                 completions.add("admin");
             }
@@ -220,7 +255,7 @@ public class GamesCommand implements BasicCommand {
             if (args[0].equalsIgnoreCase("host"))
                 return List.of("rlgl", "hns", "gb", "sg");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
-                return List.of("forcestop", "keylocs", "togglelights", "reload");
+                return List.of("forcestop", "keylocs", "togglelights", "reload", "setpoints", "delpoints");
             }
         }
 
@@ -241,6 +276,8 @@ public class GamesCommand implements BasicCommand {
         sender.sendRichMessage("<red>/agames admin keylocs - Show and hide possible key locations for hide and seek");
         sender.sendRichMessage("<red>/agames admin togglelights - Toggle the lights in Special Game (game must be running)");
         sender.sendRichMessage("<red>/agames admin reload - Reload values in config.yml");
+        sender.sendRichMessage("<red>/agames admin setpoints - Manually set the value of a player's points");
+        sender.sendRichMessage("<red>/agames admin delpoints - Manually delete a player from the points record");
     }
 
     public void sendAllCommandsList(CommandSender sender) {
@@ -275,8 +312,19 @@ public class GamesCommand implements BasicCommand {
 
     public void hostGame(Game game) {
         gameManager.prepareGame(game);
-        game.host.sendRichMessage("Preparing to play " + game.prettyTitle);
         game.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+    }
+
+    public void sendPointsLeaderboard(CommandSender sender) {
+        List<Map.Entry<String, Integer>> leaderboard = plugin.pointsManager.getTopPlayers(10);
+
+        sender.sendRichMessage("<gold><bold><underline>Aliens Games Top 10 Leaderboard\n");
+
+        for (int i = 0; i < leaderboard.size(); i++) {
+            Map.Entry<String, Integer> entry = leaderboard.get(i);
+            sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points");
+        }
+
     }
 
 }

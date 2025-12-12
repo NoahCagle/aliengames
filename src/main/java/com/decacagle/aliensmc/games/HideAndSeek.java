@@ -402,7 +402,7 @@ public class HideAndSeek extends Game {
         for (HideAndSeekPlayer p : hiders) {
             if (!p.eliminated && !p.escaped) {
                 p.player.sendRichMessage("<gold>Survived until the end!");
-                p.player.sendRichMessage("<bold><green>You've earned $5.00!");
+                p.player.sendRichMessage("<bold><green>You've earned 5 points!");
                 p.points += 5;
             }
         }
@@ -447,20 +447,20 @@ public class HideAndSeek extends Game {
             String teamColor = p.seeker ? ("<red>") : ("<blue>");
 
             if (p.eliminated) {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <red><bold>Eliminated</bold></red><white> - $0");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <red><bold>Eliminated</bold></red><white> - 0 points");
             } else if (p.escaped) {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + " - <gold><bold>Escaped</bold></gold><white> - $" + p.points);
-                plugin.economy.depositPlayer(p.player, p.points);
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + " - <gold><bold>Escaped</bold></gold><white> - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             } else if (p.seeker) {
                 if (p.kills > 0) {
-                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - <green><bold>PASS</bold></green><white> - $" + p.points);
-                    plugin.economy.depositPlayer(p.player, p.points);
+                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - " + p.kills + " Kill" + (p.kills > 1 ? "s" : "") + " - <green><bold>PASS</bold></green><white> - " + p.points + " points");
+                    plugin.pointsManager.addPoints(p.player, p.points);
                 } else {
-                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - 0 Kills - <red><bold>FAIL</bold></red><white> - $0");
+                    broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - 0 Kills - <red><bold>FAIL</bold></red><white> - 0 points");
                 }
             } else {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <green><bold>Survived</bold></green><white> - $" + p.points);
-                plugin.economy.depositPlayer(p.player, p.points);
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": " + teamColor + p.player.getName() + "<white> - <green><bold>Survived</bold></green><white> - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             }
         }
 
@@ -630,7 +630,7 @@ public class HideAndSeek extends Game {
                 p.player.showTitle(Title.title(title, subtitle));
 
                 p.player.sendRichMessage("<gold>You have escaped!");
-                p.player.sendRichMessage("<bold><green>You've earned $10.00!");
+                p.player.sendRichMessage("<bold><green>You've earned 10 points!");
                 p.points += 10;
 
                 updatePlayerLine(p);
@@ -739,15 +739,15 @@ public class HideAndSeek extends Game {
 
             if (killedHNSP.seeker && !killerHNSP.seeker) {
                 killer.sendRichMessage("<gold>You killed a seeker!");
-                killer.sendRichMessage("<bold><green>You've earned $20.00!");
+                killer.sendRichMessage("<bold><green>You've earned 20 points!");
                 killerHNSP.points += 20;
             } else if (!killedHNSP.seeker && !killerHNSP.seeker) {
                 killer.sendRichMessage("<gold>You killed a fellow hider!");
-                killer.sendRichMessage("<bold><green>You've earned $5.00");
+                killer.sendRichMessage("<bold><green>You've earned 5 points!");
                 killerHNSP.points += 5;
             } else {
                 killer.sendRichMessage("<gold>You killed a hider!");
-                killer.sendRichMessage("<bold><green>You've earned $5.00");
+                killer.sendRichMessage("<bold><green>You've earned 5 points!");
                 killerHNSP.points += 5;
             }
 
@@ -1008,6 +1008,7 @@ public class HideAndSeek extends Game {
             showNameTags();
             removeScoreboard();
         }
+        clearAllInventories();
     }
 
     public void reportPlayerDeparture(Player player) {

@@ -3,6 +3,7 @@ package com.decacagle.aliensmc;
 import com.decacagle.aliensmc.commands.*;
 import com.decacagle.aliensmc.listeners.SquidGameEvents;
 import com.decacagle.aliensmc.utilities.GameManager;
+import com.decacagle.aliensmc.utilities.PointsManager;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 import net.milkbowl.vault.economy.Economy;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 public final class AliensGames extends JavaPlugin {
 
     public ConfigManager config;
+    public PointsManager pointsManager;
 
     public Economy economy;
 
@@ -51,6 +53,8 @@ public final class AliensGames extends JavaPlugin {
 
         saveDefaultConfig();
         this.config = new ConfigManager(this);
+
+        this.pointsManager = new PointsManager(this, "points.yml");
 
         gameManager = new GameManager(this);
 

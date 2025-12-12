@@ -97,6 +97,12 @@ public class Game {
 
     }
 
+    public void clearAllInventories() {
+        for (Player p : participants) {
+            Globals.fullyClearInventory(p);
+        }
+    }
+
     public void reportPlayerDisconnect(Player player) {
 
     }
