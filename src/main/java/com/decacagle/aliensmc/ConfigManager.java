@@ -11,6 +11,7 @@ public class ConfigManager {
     private FileConfiguration fc;
 
     public boolean debugMode;
+    public int hostTimeoutSeconds;
 
     // Red Light Green Light Values
     public String gameWorldTitleRLGL;
@@ -66,6 +67,7 @@ public class ConfigManager {
         if (requester != null) requester.sendRichMessage("<yellow>Reloading AliensGames config...");
 
         this.debugMode = b("debug_mode");
+        this.hostTimeoutSeconds = i("host_timeout_seconds");
 
         // Red Light Green Light Values
         this.gameWorldTitleRLGL = s("game_world_title_rlgl");

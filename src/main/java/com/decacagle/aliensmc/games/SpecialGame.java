@@ -36,7 +36,7 @@ public class SpecialGame extends Game {
 
     // set to true after start period
     // pvp disabled when this is false
-    public boolean gameStarted = false;
+    public boolean pvpEnabled = false;
 
     public int secondsPassed = 0;
     public int gameDurationSeconds;
@@ -63,6 +63,7 @@ public class SpecialGame extends Game {
     }
 
     public void startGame() {
+        this.gameStarted = true;
         this.gameRunning = true;
         healAll();
         initPlayers();
@@ -95,7 +96,7 @@ public class SpecialGame extends Game {
                 applyDarknessEffectForAll();
                 givePlayersEquipment();
                 setGamemode();
-                gameStarted = true;
+                pvpEnabled = true;
             }, 40);
             Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
         }, (timeBeforeStart * 20));
@@ -124,7 +125,7 @@ public class SpecialGame extends Game {
 
             givePointsToRemainingPlayers();
 
-            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN), Component.text(""));
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             removeDarknessEffectForAll();
             removeNightVisionEffectForAll();
 

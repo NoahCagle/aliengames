@@ -34,6 +34,7 @@ public class Game {
     public AliensGames plugin;
     public Player host;
 
+    public boolean gameStarted = false;
     public boolean gameRunning = false;
     public boolean gameEnded = false;
 

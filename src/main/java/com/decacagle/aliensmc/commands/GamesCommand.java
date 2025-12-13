@@ -302,6 +302,8 @@ public class GamesCommand implements BasicCommand {
         sender.sendRichMessage("<yellow>/agames start - Start the mini-game that you're hosting");
         sender.sendRichMessage("<yellow>/agames cancel - Cancel the mini-game that you're hosting");
         sender.sendRichMessage("<yellow>/agames leave - Leave the mini-game that you're currently playing");
+        sender.sendRichMessage("<yellow>/agames points - See how many points you've earned in total");
+        sender.sendRichMessage("<yellow>/agames lb - See the top 10 mini-games leaderboard");
 
         if (sender.hasPermission(ADMIN_PERMS)) {
             sendAdminCommandsList(sender);
@@ -331,14 +333,43 @@ public class GamesCommand implements BasicCommand {
     }
 
     public void sendPointsLeaderboard(CommandSender sender) {
-        List<Map.Entry<String, Integer>> leaderboard = plugin.pointsManager.getTopPlayers(10);
+        List<Map.Entry<String, Integer>> leaderboard = plugin.pointsManager.getOrderedLeaderboard();
 
         sender.sendRichMessage("<gold><bold><underlined>Aliens Games Top 10 Leaderboard\n");
 
-        for (int i = 0; i < leaderboard.size(); i++) {
-            Map.Entry<String, Integer> entry = leaderboard.get(i);
-            sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points");
+        int searchSize = Math.min(leaderboard.size(), 10);
+        Player player = null;
+        boolean foundSender = false;
+
+        if (sender instanceof Player) {
+            player = (Player) sender;
         }
+
+        for (int i = 0; i < searchSize; i++) {
+            Map.Entry<String, Integer> entry = leaderboard.get(i);
+            if (player != null) {
+                if (entry.getKey().equals(player.getName())) {
+                    foundSender = true;
+                    sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points <light_purple><bold><-- YOU");
+                } else {
+                    sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points");
+                }
+            } else
+                sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points");
+        }
+
+        if (player != null && !foundSender) {
+            player.sendRichMessage("<gray>---");
+            for (int i = 0; i < leaderboard.size(); i++) {
+                Map.Entry<String, Integer> entry = leaderboard.get(i);
+                if (entry.getKey().equals(player.getName())) {
+                    sender.sendRichMessage("<gray>" + (i + 1) + ". <white>" + entry.getKey() + " - <green>" + entry.getValue() + " points");
+                    break;
+                }
+            }
+        }
+
+        sender.sendRichMessage("");
 
     }
 

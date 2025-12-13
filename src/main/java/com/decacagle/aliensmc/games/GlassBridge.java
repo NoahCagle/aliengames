@@ -240,6 +240,7 @@ public class GlassBridge extends Game {
     }
 
     public void startGame() {
+        this.gameStarted = true;
         for (Player p : participants) {
             p.teleport(new Location(world, bridgeSpawnpoint.getX(), bridgeSpawnpoint.getY(), bridgeSpawnpoint.getZ()));
         }

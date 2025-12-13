@@ -287,7 +287,7 @@ public class SquidGameEvents implements Listener {
         } else if (gameManager.getCurrentGame() instanceof SpecialGame sg) {
             if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
                 if (Globals.playerInList(attacker, sg.participants) && Globals.playerInList(defender, sg.participants)) {
-                    if (!sg.gameStarted)
+                    if (!sg.pvpEnabled)
                         event.setCancelled(true);
                 }
             }

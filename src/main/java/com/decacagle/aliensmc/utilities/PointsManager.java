@@ -68,7 +68,7 @@ public class PointsManager {
         }
     }
 
-    public List<Map.Entry<String, Integer>> getTopPlayers(int limit) {
+    public List<Map.Entry<String, Integer>> getOrderedLeaderboard() {
         ConfigurationSection section = pointsConfig.getConfigurationSection("points");
         if (section == null) return Collections.emptyList();
 
@@ -79,7 +79,6 @@ public class PointsManager {
 
         return map.entrySet().stream()
                 .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
-                .limit(limit)
                 .toList();
     }
 

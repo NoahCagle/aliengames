@@ -73,6 +73,7 @@ public class RedLightGreenLight extends Game {
     }
 
     public void startGame() {
+        this.gameStarted = true;
         healAll();
 
         fillPlayerListAndTeleport();
@@ -184,7 +185,7 @@ public class RedLightGreenLight extends Game {
 
             plugin.logger.info("ending game");
 
-            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN), Component.text(""));
+            broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
 
             Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 40);
         }

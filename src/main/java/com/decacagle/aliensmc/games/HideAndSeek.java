@@ -530,6 +530,7 @@ public class HideAndSeek extends Game {
     }
 
     public void startGame() {
+        this.gameStarted = true;
         healAll();
         spawnKeyChests();
 

@@ -3,6 +3,10 @@
   # hide and seek will not cease if all seekers are eliminated/left (this lets us run hide and seek solo to test other mechanics)
   # special game will only cease after everyone has left the game
 debug_mode: false
+# defaults to 5 minutes
+# host_timeout_seconds is the amount of time the host has to start the game before the game is automatically cancelled
+# This value should be greater than 60, so that a message can be sent to the host one minute before the game is cancelled
+host_timeout_seconds: 300
 
 # Red Light Green Light Settings
 game_world_title_rlgl: "squidgame"

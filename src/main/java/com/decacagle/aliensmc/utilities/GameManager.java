@@ -6,6 +6,7 @@ import com.decacagle.aliensmc.games.SpecialGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
@@ -47,6 +48,26 @@ public class GameManager {
                 .build();
 
         plugin.getServer().broadcast(announceMessage);
+
+        // schedule tasks to cancel game if host hasn't started the game after a certain period of time
+
+        if (plugin.config.hostTimeoutSeconds > 60) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                Game currentGame = plugin.gameManager.getCurrentGame();
+                if (currentGame != null && !currentGame.gameStarted) {
+                    currentGame.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                    currentGame.host.sendRichMessage("<red><bold>You have 1 minute to start before the game is automatically cancelled!");
+                }
+            }, (plugin.config.hostTimeoutSeconds - 60) * 20);
+        }
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Game currentGame = plugin.gameManager.getCurrentGame();
+            if (currentGame != null && !currentGame.gameStarted) {
+                currentGame.host.sendRichMessage("<red><bold>The game was not started in time!");
+                plugin.gameManager.hostCancel();
+            }
+        }, (plugin.config.hostTimeoutSeconds) * 20);
 
     }
 
