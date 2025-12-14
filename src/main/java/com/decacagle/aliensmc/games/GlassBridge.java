@@ -251,6 +251,7 @@ public class GlassBridge extends Game {
         initBridge();
         initPlayers();
         initScoreboard();
+        clearAllInventories();
 
         gameRunning = true;
         Bukkit.getScheduler().runTaskLater(plugin, this::timer, GAME_LOOP);
@@ -361,14 +362,6 @@ public class GlassBridge extends Game {
 
     public void initScoreboard() {
         createScoreboardWithTimer(prettyTitle);
-//
-//        scoreboardLightStatus = createScoreboardLine(scoreboard, scoreboardObjective, "2", 2, false);
-//        scoreboardLightStatus.prefix(Component.text("§3", NamedTextColor.GOLD));
-//        scoreboardLightStatus.suffix(Component.text("•", NamedTextColor.GRAY, TextDecoration.BOLD));
-//
-//        Team emptyLine = createScoreboardLine(scoreboard, scoreboardObjective, "1", 1, false);
-//        emptyLine.prefix(Component.text("§3"));
-//        emptyLine.suffix(Component.text("§3"));
 
         for (int i = 0; i < participants.size(); i++) {
             Player player = participants.get(i);
@@ -412,8 +405,6 @@ public class GlassBridge extends Game {
     public void reportPlayerDeparture(Player player) {
         participants.remove(player);
         removeFromScoreboard(player);
-
-        Globals.fullyClearInventory(player);
 
         if (gameRunning) {
 

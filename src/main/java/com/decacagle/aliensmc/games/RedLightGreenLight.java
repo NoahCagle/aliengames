@@ -90,8 +90,6 @@ public class RedLightGreenLight extends Game {
             if (!redLight) {
                 redLightCountdown--;
 
-                plugin.logger.info("Red light in " + redLightCountdown);
-
                 if (redLightCountdown <= 0) {
                     activateRedLight();
                 }
@@ -99,15 +97,11 @@ public class RedLightGreenLight extends Game {
             } else {
                 greenLightCountdown--;
 
-                plugin.logger.info("Green light in " + greenLightCountdown);
-
                 if (greenLightCountdown <= 0) {
                     activateGreenLight();
                 }
 
             }
-
-            plugin.logger.info("gameCountdown: " + gameCountdown);
 
             gameCountdown--;
 
@@ -121,7 +115,6 @@ public class RedLightGreenLight extends Game {
 
     public void checkGameStatus() {
         if (gameRunning) {
-            plugin.logger.info("game still running, checking status");
             for (RedLightGreenLightPlayer p : players) {
                 if (!p.crossed && !p.eliminated) {
                     checkIfCrossed(p);
@@ -135,12 +128,10 @@ public class RedLightGreenLight extends Game {
             }
 
             if (allCrossedOrEliminated()) {
-                plugin.logger.info("Everyone's out, ending game!");
                 endGame();
             }
 
             if (gameCountdown <= 0) {
-                plugin.logger.info("Time's up, ending game!");
                 endGame();
             }
 
@@ -183,8 +174,6 @@ public class RedLightGreenLight extends Game {
         if (gameRunning) {
             gameRunning = false;
 
-            plugin.logger.info("ending game");
-
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
 
             Bukkit.getScheduler().runTaskLater(plugin, this::goToLeaderboard, 40);
@@ -193,8 +182,6 @@ public class RedLightGreenLight extends Game {
 
     public void goToLeaderboard() {
         this.gameEnded = true;
-
-        plugin.logger.info("scoring and going to leaderboard");
 
         sortPlayersByTimeCrossed();
 
@@ -307,6 +294,8 @@ public class RedLightGreenLight extends Game {
 
     public void queueGameStart() {
         placeBarriers();
+
+        clearAllInventories();
 
         initScoreboard();
 
@@ -427,7 +416,7 @@ public class RedLightGreenLight extends Game {
         participants.remove(player);
         removeFromScoreboard(player);
 
-        Globals.fullyClearInventory(player);
+//        Globals.fullyClearInventory(player);
 
         if (gameRunning) {
 

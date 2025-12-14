@@ -24,6 +24,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class SquidGameEvents implements Listener {
@@ -91,11 +92,9 @@ public class SquidGameEvents implements Listener {
                                     Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
                                     Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
                                     if (rodNorth.getZ() < 1280) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
                                     }
                                     if (rodSouth.getZ() > 1210) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
                                     }
                                 }
@@ -108,11 +107,9 @@ public class SquidGameEvents implements Listener {
                                     Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
                                     Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
                                     if (rodNorth.getZ() < 1280) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         rodNorth.getBlock().setType(Material.AIR);
                                     }
                                     if (rodSouth.getZ() > 1210) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
                                     }
                                 }
@@ -125,12 +122,10 @@ public class SquidGameEvents implements Listener {
                                     Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
                                     Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
                                     if (rodNorth.getZ() < 1280) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
 
                                     }
                                     if (rodSouth.getZ() > 1210) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
                                     }
                                 }
@@ -143,11 +138,9 @@ public class SquidGameEvents implements Listener {
                                     Location rodNorth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() + za);
                                     Location rodSouth = new Location(l.getWorld(), l.getX(), l.getY(), l.getZ() - za);
                                     if (rodNorth.getZ() < 1280) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodNorth, Material.AIR.createBlockData());
                                     }
                                     if (rodSouth.getZ() > 1210) {
-                                        plugin.logger.info("ROD IN BOUNDS");
                                         gb.world.setBlockData(rodSouth, Material.AIR.createBlockData());
                                     }
                                 }
@@ -159,26 +152,50 @@ public class SquidGameEvents implements Listener {
         }
 
         // constant checking bounds no matter what
-        if (gameManager.getCurrentGame() != null) {
-            Game game = gameManager.getCurrentGame();
+//        if (gameManager.getCurrentGame() != null) {
+//            Game game = gameManager.getCurrentGame();
+//
+//            if (!game.gameEnded) {
+//                if (Globals.playerInList(player, game.participants) && !Globals.playerInList(player, game.spectators)) {
+//
+//                    if (!Globals.playerWithinBounds(player, game.boundsA, game.boundsB)) {
+//
+//                        player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
+//                        game.reportPlayerDeparture(player);
+//
+//                        if (player.getUniqueId().compareTo(game.host.getUniqueId()) == 0) {
+//                            gameManager.reportHostDisconnect();
+//                        }
+//
+//                    }
+//
+//                }
+//            }
+//
+//        }
 
-            if (!game.gameEnded) {
-                if (Globals.playerInList(player, game.participants) && !Globals.playerInList(player, game.spectators)) {
+    }
 
-                    if (!Globals.playerWithinBounds(player, game.boundsA, game.boundsB)) {
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        Game currentGame = gameManager.getCurrentGame();
 
-                        player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
-                        game.reportPlayerDeparture(player);
+        if (currentGame != null) {
+            if (Globals.playerInList(player, currentGame.participants)) {
 
-                        if (player.getUniqueId().compareTo(game.host.getUniqueId()) == 0) {
+                if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND) {
+
+                    player.sendRichMessage("<red>You have been removed from the mini-game because you left the bounds of the arena!");
+                    currentGame.reportPlayerDeparture(player);
+
+                        if (player.getUniqueId().compareTo(currentGame.host.getUniqueId()) == 0) {
                             gameManager.reportHostDisconnect();
                         }
 
-                    }
-
                 }
-            }
 
+            }
         }
 
     }
@@ -272,12 +289,12 @@ public class SquidGameEvents implements Listener {
                     }
                 }
             }
-        } else if (gameManager.getCurrentGame() instanceof RedLightGreenLight rlgl) {
-            if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
-                if (Globals.playerInList(attacker, rlgl.participants) && Globals.playerInList(defender, rlgl.participants)) {
-                    event.setCancelled(true);
-                }
-            }
+//        } else if (gameManager.getCurrentGame() instanceof RedLightGreenLight rlgl) {
+//            if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
+//                if (Globals.playerInList(attacker, rlgl.participants) && Globals.playerInList(defender, rlgl.participants)) {
+//                    event.setCancelled(true);
+//                }
+//            }
         } else if (gameManager.getCurrentGame() instanceof GlassBridge gb) {
             if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
                 if (Globals.playerInList(attacker, gb.participants) && Globals.playerInList(defender, gb.participants)) {
@@ -337,34 +354,26 @@ public class SquidGameEvents implements Listener {
         // block non-operators from opening the frontman door
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            plugin.logger.info("Right click block action!");
             Block b = event.getClickedBlock();
             if (b != null) {
-                plugin.logger.info("b != null!");
                 Location blockLoc = b.getLocation();
                 if (blockLoc.getWorld().getName().equalsIgnoreCase("squidgame")) {
-                    plugin.logger.info("world.getname equals \"squidgame\"");
                     int x = (int) blockLoc.getX();
                     int y = (int) blockLoc.getY();
                     int z = (int) blockLoc.getZ();
 
                     if ((x == 1073 && y == 47 && z == 1203) || (x == 1072 && y == 47 && z == 1199)) {
-                        plugin.logger.info("block is in one of the two locations");
                         Player player = event.getPlayer();
 
                         if (player.hasPermission(GamesCommand.ADMIN_PERMS)) {
-                            plugin.logger.info("player has perms!");
                             player.sendRichMessage("<gray>Hello, Frontman.");
 
                         } else {
-                            plugin.logger.info("player has no perms!");
                             event.setCancelled(true);
                             player.sendRichMessage("<red>Only the Frontman has the key to this door.");
 
                         }
 
-                    } else {
-                        plugin.logger.info("location: " + x + ", " + y + ", " + z);
                     }
 
                 }

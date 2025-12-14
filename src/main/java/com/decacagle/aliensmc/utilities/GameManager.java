@@ -35,6 +35,10 @@ public class GameManager {
         this.currentGame = game;
         game.prepareGame();
 
+        long gameId = System.currentTimeMillis();
+
+        game.gameId = gameId;
+
         Component announceMessage = Component.text()
                 .append(Component.text("NEW GAME STARTING", NamedTextColor.GOLD, TextDecoration.UNDERLINED, TextDecoration.BOLD))
                 .append(Component.newline())
@@ -55,8 +59,10 @@ public class GameManager {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 Game currentGame = plugin.gameManager.getCurrentGame();
                 if (currentGame != null && !currentGame.gameStarted) {
-                    currentGame.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
-                    currentGame.host.sendRichMessage("<red><bold>You have 1 minute to start before the game is automatically cancelled!");
+                    if (currentGame.gameId == gameId) {
+                        currentGame.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+                        currentGame.host.sendRichMessage("<red><bold>You have 1 minute to start before the game is automatically cancelled!");
+                    }
                 }
             }, (plugin.config.hostTimeoutSeconds - 60) * 20);
         }
@@ -64,8 +70,10 @@ public class GameManager {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             Game currentGame = plugin.gameManager.getCurrentGame();
             if (currentGame != null && !currentGame.gameStarted) {
-                currentGame.host.sendRichMessage("<red><bold>The game was not started in time!");
-                plugin.gameManager.hostCancel();
+                if (currentGame.gameId == gameId) {
+                    currentGame.host.sendRichMessage("<red><bold>The game was not started in time!");
+                    plugin.gameManager.hostCancel();
+                }
             }
         }, (plugin.config.hostTimeoutSeconds) * 20);
 

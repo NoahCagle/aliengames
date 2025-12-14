@@ -24,6 +24,8 @@ public class Game {
     public Objective scoreboardObjective;
     public Map<Player, Team> playerLines = new HashMap<>();
 
+    public long gameId;
+
     public World world;
     public List<Player> participants = new ArrayList<Player>();
     public List<Player> spectators = new ArrayList<Player>();

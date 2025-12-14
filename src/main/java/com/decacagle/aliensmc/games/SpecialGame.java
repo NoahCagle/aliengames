@@ -616,7 +616,7 @@ public class SpecialGame extends Game {
         removeDarknessEffect(player);
         removeFromScoreboard(player);
 
-        Globals.fullyClearInventory(player);
+//        Globals.fullyClearInventory(player);
 
         if (gameRunning) {
 

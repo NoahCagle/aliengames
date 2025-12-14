@@ -538,6 +538,9 @@ public class HideAndSeek extends Game {
 
         // go through list of participants, assign every other player to be hiders, and the rest as seekers
         boolean hider = true;
+
+        Collections.shuffle(participants);
+
         for (Player p : participants) {
             if (hider) hiders.add(new HideAndSeekPlayer(p, false));
             else seekers.add(new HideAndSeekPlayer(p, true));
@@ -820,15 +823,21 @@ public class HideAndSeek extends Game {
     }
 
     public void spawnKeyChests() {
-        ItemStack purpleKey = getPurpleKey();
-        ItemStack tielKey = getTielKey();
-        ItemStack brownKey = getBrownKey();
+        int numKeys = participants.size() * 3;
+
+        while (numKeys > KEY_LOCATIONS.length) {
+            numKeys--;
+        }
 
         // tracking locations so two key locations arent used at the same time
         // its unlikely, but possible
-        int[] usedIndex = new int[]{-1, -1, -1};
+        int[] usedIndex = new int[numKeys];
 
-        for (int i = 0; i < 3; i++) {
+        for (int i : usedIndex) {
+            i = -1;
+        }
+
+        for (int i = 0; i < numKeys; i++) {
             int index = (int) (Math.random() * KEY_LOCATIONS.length);
 
             while (index == usedIndex[0] || index == usedIndex[1] || index == usedIndex[2]) {
@@ -847,14 +856,14 @@ public class HideAndSeek extends Game {
 
             Chest chestInv = (Chest) b.getState();
 
-            if (i == 0) {
-                chestInv.getBlockInventory().setItem(13, purpleKey);
+            if (i % 3 == 0) {
+                chestInv.getBlockInventory().setItem(13, getPurpleKey());
                 plugin.logger.info("Placed purple key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
-            } else if (i == 1) {
-                chestInv.getBlockInventory().setItem(13, tielKey);
+            } else if (i % 3 == 1) {
+                chestInv.getBlockInventory().setItem(13, getTielKey());
                 plugin.logger.info("Placed tiel key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
             } else {
-                chestInv.getBlockInventory().setItem(13, brownKey);
+                chestInv.getBlockInventory().setItem(13, getBrownKey());
                 plugin.logger.info("Placed brown key at: " + loc.getX() + " " + loc.getY() + " " + loc.getZ());
             }
 
@@ -1026,7 +1035,7 @@ public class HideAndSeek extends Game {
         participants.remove(player);
         removeFromScoreboard(player);
 
-        Globals.fullyClearInventory(player);
+//        Globals.fullyClearInventory(player);
 
         if (gameRunning) {
 
