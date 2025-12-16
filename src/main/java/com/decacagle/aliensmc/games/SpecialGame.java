@@ -273,6 +273,12 @@ public class SpecialGame extends Game {
         }
     }
 
+    public void removeNightVisionEffect(Player player) {
+        if (plugin.config.useDarknessEffectSG) {
+            player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        }
+    }
+
     public void removeDarknessEffectForAll() {
         if (plugin.config.useDarknessEffectSG) {
             for (Player p : participants) {
@@ -614,9 +620,8 @@ public class SpecialGame extends Game {
     public void reportPlayerDeparture(Player player) {
         participants.remove(player);
         removeDarknessEffect(player);
+        removeNightVisionEffect(player);
         removeFromScoreboard(player);
-
-//        Globals.fullyClearInventory(player);
 
         if (gameRunning) {
 

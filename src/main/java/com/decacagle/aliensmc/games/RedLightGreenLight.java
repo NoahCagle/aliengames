@@ -152,11 +152,27 @@ public class RedLightGreenLight extends Game {
     }
 
     public void sortPlayersByTimeCrossed() {
-        Collections.sort(players, (o1, o2) -> {
+        List<RedLightGreenLightPlayer> crossed = new ArrayList<RedLightGreenLightPlayer>();
+
+        for (RedLightGreenLightPlayer p : players) {
+            if (p.crossed) crossed.add(p);
+        }
+
+        Collections.sort(crossed, (o1, o2) -> {
             if (o1.timeCrossed == o2.timeCrossed)
                 return 0;
-            return o1.timeCrossed < o2.timeCrossed ? 1 : -1;
+            return o1.timeCrossed < o2.timeCrossed ? -1 : 1;
         });
+
+        List<RedLightGreenLightPlayer> finalResults = new ArrayList<RedLightGreenLightPlayer>();
+
+        finalResults.addAll(crossed);
+
+        for (RedLightGreenLightPlayer p : players) {
+            if (!p.crossed) finalResults.add(p);
+        }
+
+        players = finalResults;
 
         for (int i = 0; i < players.size(); i++) {
             RedLightGreenLightPlayer p = players.get(i);
