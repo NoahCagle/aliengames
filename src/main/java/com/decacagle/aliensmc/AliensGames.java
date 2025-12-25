@@ -6,9 +6,15 @@ import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.PointsManager;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
+import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -61,6 +67,8 @@ public final class AliensGames extends JavaPlugin {
         registerCommand("agames", new GamesCommand(this, gameManager));
 
         getServer().getPluginManager().registerEvents(new SquidGameEvents(this, gameManager), this);
+
+        registerAmsFurnaceRecipe();
     }
 
     @Override
@@ -97,6 +105,26 @@ public final class AliensGames extends JavaPlugin {
         this.reloadConfig();
         this.config = new ConfigManager(this);
         sender.sendRichMessage("Reloading AliensGames config...");
+    }
+
+    public void registerAmsFurnaceRecipe() {
+        ItemStack cookedDiamond = new ItemStack(Material.DIAMOND);
+        ItemMeta meta = cookedDiamond.getItemMeta();
+        meta.displayName(Component.text("Cooked Diamond"));
+        cookedDiamond.setItemMeta(meta);
+
+        NamespacedKey key = new NamespacedKey(this, "cooked_diamond");
+
+        FurnaceRecipe recipe = new FurnaceRecipe(
+                key,
+                cookedDiamond,
+                Material.DIAMOND,
+                1.0f,
+                100
+        );
+
+        Bukkit.addRecipe(recipe);
+
     }
 
 }

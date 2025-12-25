@@ -94,6 +94,7 @@ public class SpecialGame extends Game {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 playSoundToAllPlayers(Sound.AMBIENT_CAVE, 1.5f, 1.0f);
                 applyDarknessEffectForAll();
+                applyBlindnessEffectForAll();
                 givePlayersEquipment();
                 setGamemode();
                 pvpEnabled = true;
@@ -127,6 +128,7 @@ public class SpecialGame extends Game {
 
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text(""));
             removeDarknessEffectForAll();
+            removeBlindnessEffectForAll();
             removeNightVisionEffectForAll();
 
             // three seconds delay
@@ -253,7 +255,19 @@ public class SpecialGame extends Game {
                 p.addPotionEffect(new PotionEffect(
                         PotionEffectType.DARKNESS,
                         20 * gameDurationSeconds,
-                        0
+                        plugin.config.darknessEffectAmplifierSG
+                ));
+            }
+        }
+    }
+
+    public void applyBlindnessEffectForAll() {
+        if (plugin.config.useBlindnessEffectSG) {
+            for (Player p : participants) {
+                p.addPotionEffect(new PotionEffect(
+                        PotionEffectType.BLINDNESS,
+                        20 * gameDurationSeconds,
+                        plugin.config.blindnessEffectAmplifierSG
                 ));
             }
         }
@@ -273,6 +287,12 @@ public class SpecialGame extends Game {
         }
     }
 
+    public void removeBlindnessEffect(Player player) {
+        if (plugin.config.useBlindnessEffectSG) {
+            player.removePotionEffect(PotionEffectType.BLINDNESS);
+        }
+    }
+
     public void removeNightVisionEffect(Player player) {
         if (plugin.config.useDarknessEffectSG) {
             player.removePotionEffect(PotionEffectType.NIGHT_VISION);
@@ -283,6 +303,14 @@ public class SpecialGame extends Game {
         if (plugin.config.useDarknessEffectSG) {
             for (Player p : participants) {
                 p.removePotionEffect(PotionEffectType.DARKNESS);
+            }
+        }
+    }
+
+    public void removeBlindnessEffectForAll() {
+        if (plugin.config.useBlindnessEffectSG) {
+            for (Player p : participants) {
+                p.removePotionEffect(PotionEffectType.BLINDNESS);
             }
         }
     }
@@ -552,6 +580,7 @@ public class SpecialGame extends Game {
         Bukkit.getScheduler().runTaskLater(plugin, this::replaceSeaLanterns, 20);
         Bukkit.getScheduler().runTaskLater(plugin, this::replaceLightBlocks, 30);
         removeDarknessEffectForAll();
+        removeBlindnessEffectForAll();
         removeNightVisionEffectForAll();
         if (this.scoreboard != null) {
             removeScoreboard();
@@ -618,10 +647,11 @@ public class SpecialGame extends Game {
     }
 
     public void reportPlayerDeparture(Player player) {
-        participants.remove(player);
+        super.reportPlayerDeparture(player);
+
         removeDarknessEffect(player);
+        removeBlindnessEffect(player);
         removeNightVisionEffect(player);
-        removeFromScoreboard(player);
 
         if (gameRunning) {
 
@@ -650,13 +680,6 @@ public class SpecialGame extends Game {
             }
 
         }
-
-        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
-
-        if (participants.isEmpty()) {
-            plugin.gameManager.forceStop();
-        }
-
     }
 
     public void registerBlockPlace(Location location) {
@@ -689,6 +712,7 @@ public class SpecialGame extends Game {
 
             applyNightVisionEffect(sgPlayer);
             removeDarknessEffect(sgPlayer.player);
+            removeBlindnessEffect(sgPlayer.player);
 
             // broadcast killed announcement
             broadcastMessageToAllPlayers("<red><bold>Player " + eliminated.getName() + " has been eliminated!");
@@ -721,6 +745,7 @@ public class SpecialGame extends Game {
 
             applyNightVisionEffect(killedSGP);
             removeDarknessEffect(killed);
+            removeBlindnessEffect(killed);
 
             // broadcast killed announcement
             broadcastMessageToAllPlayers("<red><bold>Player " + killed.getName() + " has been eliminated!");

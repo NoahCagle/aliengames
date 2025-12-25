@@ -85,6 +85,9 @@ pretty_title_gb: "Glass Bridge"
 # Special Game Settings
 game_world_title_sg: "squidgame"
 use_darkness_effect_sg: false
+use_blindness_effect_sg: false
+darkness_effect_amplitude_sg: 0
+blindness_effect_amplitude_sg: 0
 minimum_players_sg: 2
 game_duration_seconds_sg: 300
 time_before_start_sg: 10

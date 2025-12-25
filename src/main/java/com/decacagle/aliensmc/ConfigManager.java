@@ -48,7 +48,8 @@ public class ConfigManager {
 
     // Special Game Values
     public String gameWorldTitleSG;
-    public boolean useDarknessEffectSG;
+    public boolean useDarknessEffectSG, useBlindnessEffectSG;
+    public int darknessEffectAmplifierSG, blindnessEffectAmplifierSG;
     public int minimumPlayersSG;
     public int gameDurationSecondsSG;
     public int timeBeforeStartSecondsSG;
@@ -146,6 +147,9 @@ public class ConfigManager {
         // Special Game Settings
         this.gameWorldTitleSG = s("game_world_title_sg");
         this.useDarknessEffectSG = b("use_darkness_effect_sg");
+        this.useBlindnessEffectSG = b("use_blindness_effect_sg");
+        this.darknessEffectAmplifierSG = i("darkness_effect_amplitude_sg");
+        this.blindnessEffectAmplifierSG = i("blindness_effect_amplitude_sg");
         this.minimumPlayersSG = i("minimum_players_sg");
         this.gameDurationSecondsSG = i("game_duration_seconds_sg");
         this.timeBeforeStartSecondsSG = i("time_before_start_sg");

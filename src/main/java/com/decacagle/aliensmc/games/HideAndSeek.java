@@ -1032,10 +1032,7 @@ public class HideAndSeek extends Game {
     }
 
     public void reportPlayerDeparture(Player player) {
-        participants.remove(player);
-        removeFromScoreboard(player);
-
-//        Globals.fullyClearInventory(player);
+        super.reportPlayerDeparture(player);
 
         if (gameRunning) {
 
@@ -1074,12 +1071,6 @@ public class HideAndSeek extends Game {
                 plugin.logger.severe("Tried to find " + player.getName() + " for a departure report, but couldn't find them!");
             }
 
-        }
-
-        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
-
-        if (participants.isEmpty()) {
-            plugin.gameManager.forceStop();
         }
 
     }

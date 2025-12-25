@@ -180,7 +180,14 @@ public class Game {
     }
 
     public void reportPlayerDeparture(Player player) {
+        participants.remove(player);
+        removeFromScoreboard(player);
 
+        broadcastMessageToAllPlayers("<red>" + player.getName() + " has left your mini-game!");
+
+        if (participants.isEmpty()) {
+            plugin.gameManager.forceStop();
+        }
     }
 
 }
