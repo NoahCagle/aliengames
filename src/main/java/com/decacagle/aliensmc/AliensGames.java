@@ -1,6 +1,7 @@
 package com.decacagle.aliensmc;
 
 import com.decacagle.aliensmc.commands.*;
+import com.decacagle.aliensmc.listeners.MurderMysteryEvents;
 import com.decacagle.aliensmc.listeners.SquidGameEvents;
 import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.PointsManager;
@@ -67,6 +68,7 @@ public final class AliensGames extends JavaPlugin {
         registerCommand("agames", new GamesCommand(this, gameManager));
 
         getServer().getPluginManager().registerEvents(new SquidGameEvents(this, gameManager), this);
+        getServer().getPluginManager().registerEvents(new MurderMysteryEvents(this, gameManager), this);
 
         registerAmsFurnaceRecipe();
     }

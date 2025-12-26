@@ -54,8 +54,9 @@ public class GamesCommand implements BasicCommand {
                                 hostGame(new GlassBridge(plugin, host));
                             } else if (args[1].equalsIgnoreCase("sg") || args[1].equalsIgnoreCase("specialgame")) {
                                 hostGame(new SpecialGame(plugin, host));
-//                                sendHostableGamesMessage(host);
-                            } else {
+                            } else if (plugin.config.debugMode && (args[1].equalsIgnoreCase("mm") || args[1].equalsIgnoreCase("murdermystery"))) {
+                                hostGame(new MurderMystery(plugin, host));
+                            }else {
                                 sendHostableGamesMessage(host);
                             }
                         } else {

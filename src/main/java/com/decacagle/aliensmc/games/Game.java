@@ -99,6 +99,12 @@ public class Game {
         broadcastMessageToAllPlayers("<green>" + player.getName() + " has joined your mini-game!");
     }
 
+    public void setAllGamemodes(GameMode gamemode) {
+        for (Player p : participants) {
+            p.setGameMode(gamemode);
+        }
+    }
+
     public void cleanup() {
 
     }

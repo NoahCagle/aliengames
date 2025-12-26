@@ -69,7 +69,6 @@ public class SquidGameEvents implements Listener {
 
                     if ((playerX == ((int) hns.escapePoint.getX()) && playerY == ((int) hns.escapePoint.getY()) && playerZ == ((int) hns.escapePoint.getZ()))) {
                         hns.registerEscape(player);
-                        player.teleport(hns.spawnpoint);
                         player.setGameMode(GameMode.SPECTATOR);
                     }
 
