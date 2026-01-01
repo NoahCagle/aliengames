@@ -78,7 +78,7 @@ public class SquidGameEvents implements Listener {
 
         } else if (gameManager.getCurrentGame() instanceof GlassBridge gb) {
             if (gb.gameRunning) {
-                if (Globals.playerInList(player, gb.participants)) {
+                if (Globals.playerInList(player, gb.participants) && player.getGameMode() != GameMode.SPECTATOR) {
                     if (player.getZ() > 1210 && player.getZ() < 1281) {
                         if (player.getY() >= 95 && player.getY() <= 96.1) {
                             double x = player.getX();
@@ -192,6 +192,8 @@ public class SquidGameEvents implements Listener {
                             gameManager.reportHostDisconnect();
                         }
 
+                } else if (event.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE) {
+                    event.setCancelled(true);
                 }
 
             }

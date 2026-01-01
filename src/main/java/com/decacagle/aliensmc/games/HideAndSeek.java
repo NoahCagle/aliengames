@@ -366,6 +366,7 @@ public class HideAndSeek extends Game {
         this.gameDurationSeconds = plugin.config.gameDurationSecondsHNS;
         this.seekerSpawnTimeSeconds = plugin.config.seekerSpawnTimeSecondsHNS;
         this.prettyTitle = plugin.config.prettyTitleHNS;
+        this.experimental = plugin.config.hnsExperimental;
     }
 
     public void timer() {
@@ -472,7 +473,7 @@ public class HideAndSeek extends Game {
 
         broadcastMessageToAllPlayers(" ");
 
-        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
+        Globals.goToLeaderboard(orderedPlayers, numWinners, plugin, plugin.congratulationsSong);
 
     }
 
@@ -630,22 +631,25 @@ public class HideAndSeek extends Game {
 
         for (HideAndSeekPlayer p : hiders) {
             if (p.player.getUniqueId().compareTo(escapee.getUniqueId()) == 0) {
-                p.escaped = true;
-                p.escapeTime = secondsPassed;
-                p.player.setGameMode(GameMode.SPECTATOR);
+                if (!p.escaped) {
+                    p.escaped = true;
+                    p.escapeTime = secondsPassed;
+                    p.player.setGameMode(GameMode.SPECTATOR);
 
-                spectators.add(p.player);
+                    spectators.add(p.player);
 
-                Component title = Component.text("You have escaped!", NamedTextColor.GREEN, TextDecoration.BOLD);
-                Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
+                    Component title = Component.text("You have escaped!", NamedTextColor.GREEN, TextDecoration.BOLD);
+                    Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
 
-                p.player.showTitle(Title.title(title, subtitle));
+                    p.player.showTitle(Title.title(title, subtitle));
 
-                p.player.sendRichMessage("<gold>You have escaped!");
-                p.player.sendRichMessage("<bold><green>You've earned 10 points!");
-                p.points += 10;
+                    p.player.sendRichMessage("<gold>You have escaped!");
+                    p.player.sendRichMessage("<bold><green>You've earned 10 points!");
+                    p.points += 10;
 
-                updatePlayerLine(p);
+                    updatePlayerLine(p);
+
+                }
 
                 foundPlayer = true;
                 break;

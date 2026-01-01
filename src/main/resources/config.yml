@@ -1,14 +1,13 @@
 # When activated, a few things will happen
-  # minimum player counts will be ignored
-  # hide and seek will not cease if all seekers are eliminated/left (this lets us run hide and seek solo to test other mechanics)
-  # special game will only cease after everyone has left the game
+# minimum player counts will be ignored
+# hide and seek will not cease if all seekers are eliminated/left (this lets us run hide and seek solo to test other mechanics)
+# special game will only cease after everyone has left the game
 debug_mode: false
-# defaults to 5 minutes
-# host_timeout_seconds is the amount of time the host has to start the game before the game is automatically cancelled
-# This value should be greater than 60, so that a message can be sent to the host one minute before the game is cancelled
 host_timeout_seconds: 300
 
 # Red Light Green Light Settings
+rlgl_enabled: true
+rlgl_experimental: false
 game_world_title_rlgl: "squidgame"
 minimum_players_rlgl: 2
 game_duration_seconds_rlgl: 45
@@ -30,21 +29,23 @@ bounds_b_z_rlgl: 984
 pretty_title_rlgl: "Red Light Green Light"
 
 # Hide and Seek Settings
+hns_enabled: true
+hns_experimental: false
 game_world_title_hns: "squidgame"
 minimum_players_hns: 2
 game_duration_seconds_hns: 300
 seeker_spawn_time_seconds_hns: 30
-spawnpoint_x_hns: 183
+spawnpoint_x_hns: 166
 spawnpoint_y_hns: 266
-spawnpoint_z_hns: 1053
-spawnpoint_yaw_hns: 90
+spawnpoint_z_hns: 1049
+spawnpoint_yaw_hns: 0
 spawnpoint_pitch_hns: 0
 map_loc_x_hns: 247.5
 map_loc_y_hns: 227
 map_loc_z_hns: 994
 map_loc_yaw_hns: -90
 map_loc_pitch_hns: 0
-escape_x_hns: 407
+escape_x_hns: 400
 escape_y_hns: 227
 escape_z_hns: 992
 bounds_a_x_hns: 131
@@ -56,8 +57,11 @@ bounds_b_z_hns: 859
 pretty_title_hns: "Hide and Seek"
 
 # Glass Bridge Settings
+gb_enabled: true
+gb_experimental: false
 game_world_title_gb: "squidgame"
 minimum_players_gb: 1
+starting_lives_gb: 3
 game_duration_seconds_gb: 300
 spawnpoint_x_gb: 962.5
 spawnpoint_y_gb: 96
@@ -83,13 +87,15 @@ bounds_b_z_gb: 1128
 pretty_title_gb: "Glass Bridge"
 
 # Special Game Settings
+sg_enabled: true
+sg_experimental: false
 game_world_title_sg: "squidgame"
-use_darkness_effect_sg: false
+use_darkness_effect_sg: true
 use_blindness_effect_sg: false
 darkness_effect_amplitude_sg: 0
 blindness_effect_amplitude_sg: 0
 minimum_players_sg: 2
-game_duration_seconds_sg: 300
+game_duration_seconds_sg: 150
 time_before_start_sg: 10
 spawnpoint_x_sg: 758
 spawnpoint_y_sg: 17
@@ -103,3 +109,22 @@ bounds_b_x_sg: 817
 bounds_b_y_sg: -4
 bounds_b_z_sg: 1210
 pretty_title_sg: "Special Game"
+
+# Murder Mystery Settings
+mm_enabled: true
+mm_experimental: false
+game_world_title_mm: "murdermystery"
+minimum_players_mm: 3
+game_duration_seconds_mm: 300
+time_before_start_mm: 10
+spawnpoint_x_mm: 85.5
+spawnpoint_y_mm: 69
+spawnpoint_z_mm: 71.5
+spawnpoint_yaw_mm: 0
+spawnpoint_pitch_mm: 0
+map_loc_x_mm: 85.5
+map_loc_y_mm: -18
+map_loc_z_mm: 71.5
+map_loc_yaw_mm: 0
+map_loc_pitch_mm: 0
+pretty_title_mm: "Murder Mystery"

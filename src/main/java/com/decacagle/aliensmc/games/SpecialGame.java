@@ -49,6 +49,7 @@ public class SpecialGame extends Game {
         this.gameDurationSeconds = plugin.config.gameDurationSecondsSG;
         this.timeBeforeStart = plugin.config.timeBeforeStartSecondsSG;
         this.prettyTitle = plugin.config.prettyTitleSG;
+        this.experimental = plugin.config.sgExperimental;
     }
 
     public void timer() {
@@ -197,7 +198,7 @@ public class SpecialGame extends Game {
 
         plugin.gameManager.stopGame();
 
-        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
+        Globals.goToLeaderboard(orderedPlayers, numWinners, plugin, plugin.congratulationsSong);
 
     }
 

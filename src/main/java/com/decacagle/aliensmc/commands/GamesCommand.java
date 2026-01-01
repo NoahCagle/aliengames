@@ -47,16 +47,38 @@ public class GamesCommand implements BasicCommand {
                     if (args.length >= 2) {
                         if (gameManager.getCurrentGame() == null) {
                             if (args[1].equalsIgnoreCase("rlgl") || args[1].equalsIgnoreCase("redlightgreenlight")) {
-                                hostGame(new RedLightGreenLight(plugin, host));
+                                if (plugin.config.rlglEnabled) {
+                                    hostGame(new RedLightGreenLight(plugin, host));
+                                } else {
+                                    host.sendRichMessage("<yellow>This game is currently disabled due to an error.");
+                                    host.sendRichMessage("<yellow>sowwy... :(");
+                                }
                             } else if (args[1].equalsIgnoreCase("hns") || args[1].equalsIgnoreCase("hideandseek")) {
-                                hostGame(new HideAndSeek(plugin, host));
+                                if (plugin.config.hnsEnabled) {
+                                    hostGame(new HideAndSeek(plugin, host));
+                                } else {
+                                    host.sendRichMessage("<yellow>This game is currently disabled due to an error.");
+                                    host.sendRichMessage("<yellow>sowwy... :(");
+                                }
                             } else if (args[1].equalsIgnoreCase("gb") || args[1].equalsIgnoreCase("glassbridge")) {
-                                hostGame(new GlassBridge(plugin, host));
+                                if (plugin.config.gbEnabled) {
+                                    hostGame(new GlassBridge(plugin, host));
+                                } else {
+                                    host.sendRichMessage("<yellow>This game is currently disabled due to an error.");
+                                    host.sendRichMessage("<yellow>sowwy... :(");
+                                }
                             } else if (args[1].equalsIgnoreCase("sg") || args[1].equalsIgnoreCase("specialgame")) {
-                                hostGame(new SpecialGame(plugin, host));
-                            } else if (plugin.config.debugMode && (args[1].equalsIgnoreCase("mm") || args[1].equalsIgnoreCase("murdermystery"))) {
-                                hostGame(new MurderMystery(plugin, host));
-                            }else {
+                                if (plugin.config.sgEnabled) {
+                                    hostGame(new SpecialGame(plugin, host));
+                                } else {
+                                    host.sendRichMessage("<yellow>This game is currently disabled due to an error.");
+                                    host.sendRichMessage("<yellow>sowwy... :(");
+                                }
+                            } else if (args[1].equalsIgnoreCase("mm") || args[1].equalsIgnoreCase("murdermystery")) {
+                                if (plugin.config.mmEnabled) {
+                                    hostGame(new MurderMystery(plugin, host));
+                                }
+                            } else {
                                 sendHostableGamesMessage(host);
                             }
                         } else {
@@ -268,7 +290,7 @@ public class GamesCommand implements BasicCommand {
             return completions;
         } else if (args.length >= 2) {
             if (args[0].equalsIgnoreCase("host"))
-                return List.of("rlgl", "hns", "gb", "sg");
+                return List.of("rlgl", "hns", "gb", "sg", "mm");
             else if (args[0].equalsIgnoreCase("admin") && stack.getSender().hasPermission(ADMIN_PERMS)) {
                 return List.of("forcestop", "keylocs", "togglelights", "reload", "setpoints", "delpoints", "debug");
             }
@@ -283,6 +305,7 @@ public class GamesCommand implements BasicCommand {
         player.sendRichMessage("<green>/agames host hns - Host a game of Hide And Seek");
         player.sendRichMessage("<green>/agames host gb - Host a game of Glass Bridge");
         player.sendRichMessage("<green>/agames host sg - Host a Special Game");
+        player.sendRichMessage("<green>/agames host mm - Host a game of Murder Mystery");
     }
 
     public void sendAdminCommandsList(CommandSender sender) {
@@ -329,8 +352,13 @@ public class GamesCommand implements BasicCommand {
     }
 
     public void hostGame(Game game) {
-        gameManager.prepareGame(game);
-        game.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+        if (game.experimental && !game.host.hasPermission(ADMIN_PERMS)) {
+            game.host.sendRichMessage("<red>" + game.prettyTitle + " is currently experimental, and can only be hosted by administrators!");
+            game.host.sendRichMessage("<red>sowwy... :(");
+        } else {
+            gameManager.prepareGame(game);
+            game.host.sendRichMessage("<yellow>When you're ready to start, type <bold>/agames start");
+        }
     }
 
     public void sendPointsLeaderboard(CommandSender sender) {

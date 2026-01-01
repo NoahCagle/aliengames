@@ -14,6 +14,8 @@ public class ConfigManager {
     public int hostTimeoutSeconds;
 
     // Red Light Green Light Values
+    public boolean rlglEnabled;
+    public boolean rlglExperimental;
     public String gameWorldTitleRLGL;
     public int minimumPlayersRLGL;
     public int gameDurationSecondsRLGL;
@@ -26,6 +28,8 @@ public class ConfigManager {
     public String prettyTitleRLGL;
 
     // Hide and Seek Values
+    public boolean hnsEnabled;
+    public boolean hnsExperimental;
     public String gameWorldTitleHNS;
     public int minimumPlayersHNS;
     public int gameDurationSecondsHNS;
@@ -37,8 +41,11 @@ public class ConfigManager {
     public String prettyTitleHNS;
 
     // Glass Bridge Values
+    public boolean gbEnabled;
+    public boolean gbExperimental;
     public String gameWorldTitleGB;
     public int minimumPlayersGB;
+    public int startingLivesGB;
     public int gameDurationSecondsGB;
     public double spawnpointXGB, spawnpointYGB, spawnpointZGB, spawnpointYawGB, spawnpointPitchGB;
     public double bridgeSpawnpointXGB, bridgeSpawnpointYGB, bridgeSpawnpointZGB, bridgeSpawnpointYawGB, bridgeSpawnpointPitchGB;
@@ -47,6 +54,8 @@ public class ConfigManager {
     public String prettyTitleGB;
 
     // Special Game Values
+    public boolean sgEnabled;
+    public boolean sgExperimental;
     public String gameWorldTitleSG;
     public boolean useDarknessEffectSG, useBlindnessEffectSG;
     public int darknessEffectAmplifierSG, blindnessEffectAmplifierSG;
@@ -56,6 +65,17 @@ public class ConfigManager {
     public double spawnpointXSG, spawnpointYSG, spawnpointZSG, spawnpointYawSG, spawnpointPitchSG;
     public double boundsAXSG, boundsAYSG, boundsAZSG, boundsBXSG, boundsBYSG, boundsBZSG;
     public String prettyTitleSG;
+
+    // Murder Mystery Values
+    public boolean mmEnabled;
+    public boolean mmExperimental;
+    public String gameWorldTitleMM;
+    public int minimumPlayersMM;
+    public int gameDurationSecondsMM;
+    public int timeBeforeStartSecondsMM;
+    public double spawnpointXMM, spawnpointYMM, spawnpointZMM, spawnpointYawMM, spawnpointPitchMM;
+    public double mapLocXMM, mapLocYMM, mapLocZMM, mapLocYawMM, mapLocPitchMM;
+    public String prettyTitleMM;
 
     public ConfigManager(AliensGames plugin) {
         this.plugin = plugin;
@@ -71,6 +91,8 @@ public class ConfigManager {
         this.hostTimeoutSeconds = i("host_timeout_seconds");
 
         // Red Light Green Light Values
+        this.rlglEnabled = b("rlgl_enabled");
+        this.rlglExperimental = b("rlgl_experimental");
         this.gameWorldTitleRLGL = s("game_world_title_rlgl");
         this.minimumPlayersRLGL = i("minimum_players_rlgl");
         this.gameDurationSecondsRLGL = i("game_duration_seconds_rlgl");
@@ -92,6 +114,8 @@ public class ConfigManager {
         this.prettyTitleRLGL = s("pretty_title_rlgl");
 
         // Hide and Seek Values
+        this.hnsEnabled = b("hns_enabled");
+        this.hnsExperimental = b("hns_experimental");
         this.gameWorldTitleHNS = s("game_world_title_hns");
         this.minimumPlayersHNS = i("minimum_players_hns");
         this.gameDurationSecondsHNS = i("game_duration_seconds_hns");
@@ -118,8 +142,11 @@ public class ConfigManager {
         this.prettyTitleHNS = s("pretty_title_hns");
 
         // Glass Bridge Values
+        this.gbEnabled = b("gb_enabled");
+        this.gbExperimental = b("gb_experimental");
         this.gameWorldTitleGB = s("game_world_title_gb");
         this.minimumPlayersGB = i("minimum_players_gb");
+        this.startingLivesGB = i("starting_lives_gb");
         this.gameDurationSecondsGB = i("game_duration_seconds_gb");
         this.spawnpointXGB = d("spawnpoint_x_gb");
         this.spawnpointYGB = d("spawnpoint_y_gb");
@@ -145,6 +172,8 @@ public class ConfigManager {
         this.prettyTitleGB = s("pretty_title_gb");
 
         // Special Game Settings
+        this.sgEnabled = b("sg_enabled");
+        this.sgExperimental = b("sg_experimental");
         this.gameWorldTitleSG = s("game_world_title_sg");
         this.useDarknessEffectSG = b("use_darkness_effect_sg");
         this.useBlindnessEffectSG = b("use_blindness_effect_sg");
@@ -165,6 +194,25 @@ public class ConfigManager {
         this.boundsBYSG = d("bounds_b_y_sg");
         this.boundsBZSG = d("bounds_b_z_sg");
         this.prettyTitleSG = s("pretty_title_sg");
+
+        // Murder Mystery Settings
+        this.mmEnabled = b("mm_enabled");
+        this.mmExperimental = b("mm_experimental");
+        this.gameWorldTitleMM = s("game_world_title_mm");
+        this.minimumPlayersMM = i("minimum_players_mm");
+        this.gameDurationSecondsMM = i("game_duration_seconds_mm");
+        this.timeBeforeStartSecondsMM = i("time_before_start_mm");
+        this.spawnpointXMM = d("spawnpoint_x_mm");
+        this.spawnpointYMM = d("spawnpoint_y_mm");
+        this.spawnpointZMM = d("spawnpoint_z_mm");
+        this.spawnpointYawMM = d("spawnpoint_yaw_mm");
+        this.spawnpointPitchMM = d("spawnpoint_pitch_mm");
+        this.mapLocXMM = d("map_loc_x_mm");
+        this.mapLocYMM = d("map_loc_y_mm");
+        this.mapLocZMM = d("map_loc_z_mm");
+        this.mapLocYawMM = d("map_loc_yaw_mm");
+        this.mapLocPitchMM = d("map_loc_pitch_mm");
+        this.prettyTitleMM = s("pretty_title_mm");
 
         plugin.logger.info("AliensGames config loaded!");
         if (requester != null) requester.sendRichMessage("<green>AliensGames config reloaded!");

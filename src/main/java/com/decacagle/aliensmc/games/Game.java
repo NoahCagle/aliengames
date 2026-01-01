@@ -40,6 +40,8 @@ public class Game {
     public boolean gameRunning = false;
     public boolean gameEnded = false;
 
+    public boolean experimental = false;
+
     public String prettyTitle;
 
     public int minPlayers;

@@ -9,6 +9,9 @@ public class GlassBridgePlayer {
     public boolean eliminated = false;
     public boolean crossed = false;
     public int timeCrossed = -1;
+    public int timeOfElimination = -1;
+
+    public int lives = 3;
 
     public boolean connected = true;
 
@@ -16,9 +19,10 @@ public class GlassBridgePlayer {
 
     public int points = 0;
 
-    public GlassBridgePlayer(Player player, int order) {
+    public GlassBridgePlayer(Player player, int order, int startingLives) {
         this.player = player;
         this.order = order;
+        this.lives = startingLives;
     }
 
 }

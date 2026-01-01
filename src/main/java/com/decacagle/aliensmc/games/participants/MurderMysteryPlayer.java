@@ -13,6 +13,10 @@ public class MurderMysteryPlayer {
 
     public int points = 0;
 
+    public int kills = 0;
+
+    public int secondsSurvived = 0;
+
     public MurderMysteryPlayer(Player player, MurderMysteryRole role) {
         this.player = player;
         this.role = role;

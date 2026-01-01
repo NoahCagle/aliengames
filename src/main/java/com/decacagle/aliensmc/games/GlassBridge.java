@@ -20,15 +20,13 @@ import java.util.List;
 
 public class GlassBridge extends Game {
 
-    public final long GAME_LOOP = 20L;
-
     public Location bridgeSpawnpoint;
     public Location vipLoungeSpawnpoint;
 
     public List<GlassBridgePlayer> players = new ArrayList<GlassBridgePlayer>();
     public GlassBridgeSpace[] spaces = new GlassBridgeSpace[18];
 
-    public double secondsPassed = 0;
+    public int secondsPassed = 0;
     public int gameDurationSeconds;
 
     public GlassBridge(AliensGames plugin, Player host) {
@@ -40,23 +38,18 @@ public class GlassBridge extends Game {
         this.vipLoungeSpawnpoint = new Location(world, plugin.config.vipSpawnpointXGB, plugin.config.vipSpawnpointYGB, plugin.config.vipSpawnpointZGB, (float) plugin.config.vipSpawnpointYawGB, (float) plugin.config.vipSpawnpointPitchGB);
         this.gameDurationSeconds = plugin.config.gameDurationSecondsGB;
         this.prettyTitle = plugin.config.prettyTitleGB;
+        this.experimental = plugin.config.gbExperimental;
     }
 
     public void timer() {
-        secondsPassed += GAME_LOOP / 20.0;
+        secondsPassed++;
 
-        if (secondsPassed >= gameDurationSeconds) {
-            gameRunning = false;
-        }
-
-        if (secondsPassed % 1 == 0) {
-            updateTimer(Component.text("Time Remaining: "), gameDurationSeconds - ((int) secondsPassed));
-        }
+        updateTimer(Component.text("Time Remaining: "), gameDurationSeconds - secondsPassed);
 
         checkPlayerPositions();
         checkGameStatus();
 
-        if (gameRunning) Bukkit.getScheduler().runTaskLater(plugin, this::timer, GAME_LOOP);
+        if (gameRunning) Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
     }
 
     public void checkGameStatus() {
@@ -66,9 +59,19 @@ public class GlassBridge extends Game {
             endGame();
         } else if (gameRunning && secondsPassed >= gameDurationSeconds) {
             broadcastTitleToAllPlayers(Component.text("Game Over!", NamedTextColor.GREEN, TextDecoration.BOLD), Component.text("Time is up!"));
+            markRemainingPlayersEliminated();
             endGame();
         }
 
+    }
+
+    public void markRemainingPlayersEliminated() {
+        for (GlassBridgePlayer p : players) {
+            if (!p.crossed) {
+                p.eliminated = true;
+                p.timeOfElimination = secondsPassed;
+            }
+        }
     }
 
     public boolean allPlayersCrossedOrEliminated() {
@@ -169,7 +172,7 @@ public class GlassBridge extends Game {
                         updatePlayerLine(p);
                     }
                 }
-            } else {
+            } else if (!p.eliminated) {
                 if (i != 0) {
                     if (players.get(i - 1).takenFirstLeap) {
                         p.player.teleport(bridgeSpawnpoint);
@@ -184,29 +187,59 @@ public class GlassBridge extends Game {
 
     }
 
-    public void sortPlayersByTimeCrossed() {
-        Collections.sort(players, (o1, o2) -> {
-            if (o1.timeCrossed == o2.timeCrossed)
-                return 0;
-            return o1.timeCrossed < o2.timeCrossed ? 1 : -1;
-        });
+    // 12-26-2025 11:22 am. i dont like what im getting ready to do here..
+    public List<GlassBridgePlayer> scoreAndSortPlayers() {
+        List<GlassBridgePlayer> crossed = new ArrayList<GlassBridgePlayer>();
+        List<GlassBridgePlayer> eliminated = new ArrayList<GlassBridgePlayer>();
 
-        for (int i = 0; i < players.size(); i++) {
-            GlassBridgePlayer p = players.get(i);
-            if (p.crossed) {
-                if (i == 0) p.points = 20;
-                else if (i == 1) p.points = 15;
-                else if (i == 2) p.points = 10;
-                else p.points = 5;
+        for (GlassBridgePlayer p : players) {
+            if (p.connected) {
+                if (p.crossed) {
+                    crossed.add(p);
+                } else if (p.eliminated) {
+                    eliminated.add(p);
+                }
             }
         }
+
+        Collections.sort(crossed, (o1, o2) -> {
+            if (o1.timeCrossed == o2.timeCrossed)
+                return 0;
+            return o1.timeCrossed < o2.timeCrossed ? -1 : 1;
+        });
+
+        Collections.sort(eliminated, (o1, o2) -> {
+            if (o1.timeOfElimination == o2.timeOfElimination)
+                return 0;
+            return o1.timeOfElimination < o2.timeOfElimination ? 1 : -1;
+        });
+
+        List<GlassBridgePlayer> finalList = new ArrayList<GlassBridgePlayer>();
+
+        finalList.addAll(crossed);
+        finalList.addAll(eliminated);
+
+        for (int i = 0; i < finalList.size(); i++) {
+            GlassBridgePlayer p = finalList.get(i);
+            if (i == 0) p.points = 15;
+            else if (i == 1) p.points = 10;
+            else if (i == 2) p.points = 5;
+
+            if (p.crossed) {
+                p.points += 5;
+            }
+        }
+
+        return finalList;
+
+        // 12-26-2025 11:41 am. yeah i think i hate myself.
 
     }
 
     public void goToLeaderboard() {
         this.gameEnded = true;
 
-        sortPlayersByTimeCrossed();
+        List<GlassBridgePlayer> finalResults = scoreAndSortPlayers();
 
         healAll();
 
@@ -216,24 +249,29 @@ public class GlassBridge extends Game {
 
         int numWinners = 0;
 
-        for (int i = 0; i < players.size(); i++) {
-            GlassBridgePlayer p = players.get(i);
+        for (int i = 0; i < finalResults.size(); i++) {
+            GlassBridgePlayer p = finalResults.get(i);
             orderedPlayers.add(p.player);
 
             String numberColor = i == 0 ? ("<#D4AF37>") : (i == 1 ? ("<#C0C0C0>") : (i == 2 ? ("<#CD7F32>") : ("<gray>")));
 
             if (p.crossed) {
-                numWinners++;
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + " seconds</bold></green><white> - " + p.points + " points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <green><bold>Crossed in " + Globals.secondsToFormattedTime(p.timeCrossed) + "s</bold></green><white> - " + p.points + " points");
                 plugin.pointsManager.addPoints(p.player, p.points);
             } else {
-                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated</bold></red><white> - 0 points");
+                broadcastMessageToAllPlayers(numberColor + "<bold>" + Globals.numberToPosition(i + 1) + ": <white>" + p.player.getName() + " - <red><bold>Eliminated in " + Globals.secondsToFormattedTime(p.timeOfElimination) + "s</bold></red><white> - " + p.points + " points");
+                plugin.pointsManager.addPoints(p.player, p.points);
             }
+
+            if (p.points > 0) numWinners++;
+
         }
 
         broadcastMessageToAllPlayers("");
 
-        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
+        setAllGamemodes(GameMode.ADVENTURE);
+
+        Globals.goToLeaderboard(orderedPlayers, numWinners, plugin, plugin.congratulationsSong);
 
         cleanup();
 
@@ -254,7 +292,7 @@ public class GlassBridge extends Game {
         clearAllInventories();
 
         gameRunning = true;
-        Bukkit.getScheduler().runTaskLater(plugin, this::timer, GAME_LOOP);
+        Bukkit.getScheduler().runTaskLater(plugin, this::timer, 20);
     }
 
     public void initBridge() {
@@ -308,7 +346,7 @@ public class GlassBridge extends Game {
         for (int i = 0; i < participants.size(); i++) {
             Player participant = participants.get(i);
             Globals.fullyClearInventory(participant);
-            players.add(new GlassBridgePlayer(participant, i));
+            players.add(new GlassBridgePlayer(participant, i, plugin.config.startingLivesGB));
             String position = Globals.numberToPosition(i + 1);
             NamedTextColor posCol = determineOrderColor(i + 1);
 
@@ -330,22 +368,37 @@ public class GlassBridge extends Game {
     public void registerElimination(Player eliminated) {
         for (GlassBridgePlayer p : players) {
             if (p.player.getUniqueId().compareTo(eliminated.getUniqueId()) == 0) {
-                p.eliminated = true;
-                spectators.add(p.player);
+                p.lives--;
+                if (p.lives <= 0) {
+                    p.eliminated = true;
+                    spectators.add(p.player);
+                    p.timeOfElimination = secondsPassed;
 
-                Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
-                Component subtitle = Component.text("You can watch the rest of the game from the VIP lounge", NamedTextColor.GOLD);
+                    Component title = Component.text("You have been eliminated!", NamedTextColor.RED, TextDecoration.BOLD);
+                    Component subtitle = Component.text("You are now a spectator until the end of the game", NamedTextColor.GOLD);
 
-                p.player.showTitle(Title.title(title, subtitle));
+                    p.player.showTitle(Title.title(title, subtitle));
 
-                updatePlayerLine(p);
+                    updatePlayerLine(p);
 
-                broadcastMessageToAllPlayers("<red><bold>Player " + eliminated.getName() + " has been eliminated!");
+                    broadcastMessageToAllPlayers("<red><bold>Player " + eliminated.getName() + " has been eliminated!");
+
+                    eliminated.setGameMode(GameMode.SPECTATOR);
+
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> p.player.teleport(bridgeSpawnpoint), 10); // wont teleport immediately for whatever reason, so im adding a half second delay
+
+                } else {
+                    Component title = Component.text(p.lives + (p.lives == 1 ? " life " : " lives ") + "left", NamedTextColor.YELLOW, TextDecoration.BOLD);
+                    Component subtitle = Component.text("", NamedTextColor.GOLD);
+
+                    p.player.showTitle(Title.title(title, subtitle));
+
+                    updatePlayerLine(p);
+
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> p.player.teleport(bridgeSpawnpoint), 10); // wont teleport immediately for whatever reason, so im adding a half second delay
+                }
 
                 if (!p.takenFirstLeap) p.takenFirstLeap = true;
-
-                Bukkit.getScheduler().runTaskLater(plugin, () -> p.player.teleport(vipLoungeSpawnpoint), 10); // wont teleport immediately for whatever reason, so im adding a half second delay
-
             }
         }
     }
@@ -370,7 +423,7 @@ public class GlassBridge extends Game {
             playerLines.put(player, playerLine);
 
             playerLine.prefix(Component.text(player.getName() + ": "));
-            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+            playerLine.suffix(Component.text(plugin.config.startingLivesGB + " lives", NamedTextColor.YELLOW, TextDecoration.BOLD));
 
         }
 
@@ -385,7 +438,7 @@ public class GlassBridge extends Game {
         } else if (player.eliminated) {
             playerLine.suffix(Component.text("✘", NamedTextColor.RED, TextDecoration.BOLD));
         } else {
-            playerLine.suffix(Component.text("✔", NamedTextColor.GREEN, TextDecoration.BOLD));
+            playerLine.suffix(Component.text(player.lives + (player.lives == 1 ? " life" : " lives"), NamedTextColor.YELLOW, TextDecoration.BOLD));
         }
 
         if (!player.connected) {

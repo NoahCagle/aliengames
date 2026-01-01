@@ -99,7 +99,8 @@ public class Globals {
         return ret;
     }
 
-    public static void goToLeaderboard(List<Player> players, World world, int winners, AliensGames plugin, Song song) {
+    public static void goToLeaderboard(List<Player> players, int winners, AliensGames plugin, Song song) {
+        World world = plugin.getServer().getWorld("squidgame");
         Location leaderboardLoc = new Location(world, leaderboardLocation.getX(), leaderboardLocation.getY(), leaderboardLocation.getZ(), 180, 0);
         Location firstPlaceLoc = new Location(world, firstPlaceLocation.getX(), firstPlaceLocation.getY(), firstPlaceLocation.getZ(), 0, 0);
         Location secondPlaceLoc = new Location(world, secondPlaceLocation.getX(), secondPlaceLocation.getY(), secondPlaceLocation.getZ(), 0, 0);
@@ -130,34 +131,38 @@ public class Globals {
             psp.addPlayer(player);
         }
 
-        psp.setPlaying(true);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            psp.setPlaying(false);
-            psp.destroy();
-        }, 1200L);
+        if (winners > 0) {
 
-        for (int i = 0; i < 10; i++) {
-            if (i % 4 != 0) {
-                int fireworkIndex = (i - 1) % 4;
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    Location loc = new Location(world, fireworksLocation.getX() + (fireworkIndex * 2), fireworksLocation.getY(), fireworksLocation.getZ());
+            psp.setPlaying(true);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                psp.setPlaying(false);
+                psp.destroy();
+            }, 1200L);
 
-                    Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
+            for (int i = 0; i < 10; i++) {
+                if (i % 4 != 0) {
+                    int fireworkIndex = (i - 1) % 4;
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        Location loc = new Location(world, fireworksLocation.getX() + (fireworkIndex * 2), fireworksLocation.getY(), fireworksLocation.getZ());
 
-                    FireworkMeta meta = firework.getFireworkMeta();
-                    meta.addEffect(
-                            FireworkEffect.builder()
-                                    .withColor(Color.GREEN)
-                                    .withFade(Color.LIME)
-                                    .with(FireworkEffect.Type.BALL_LARGE)
-                                    .flicker(true)
-                                    .trail(true)
-                                    .build()
-                    );
-                    meta.setPower(1);
-                    firework.setFireworkMeta(meta);
-                }, i * 5);
+                        Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
+
+                        FireworkMeta meta = firework.getFireworkMeta();
+                        meta.addEffect(
+                                FireworkEffect.builder()
+                                        .withColor(Color.GREEN)
+                                        .withFade(Color.LIME)
+                                        .with(FireworkEffect.Type.BALL_LARGE)
+                                        .flicker(true)
+                                        .trail(true)
+                                        .build()
+                        );
+                        meta.setPower(1);
+                        firework.setFireworkMeta(meta);
+                    }, i * 5);
+                }
             }
+
         }
 
     }
@@ -167,7 +172,22 @@ public class Globals {
         double x = Math.cos(startingPosRadians + (distanceBetweenPlayers * loserIndex)) * distanceFromPodium;
         double y = Math.sin(startingPosRadians + (distanceBetweenPlayers * loserIndex)) * distanceFromPodium;
 
+        // ensure x and y are finite before passing it to a location
+        x *= 100;
+        y *= 100;
+
+        x = Math.round(x);
+        y = Math.round(y);
+
+        x /= 100;
+        y /= 100;
+
         double angleDegrees = (180.0 / Math.PI) * (startingPosRadians + (distanceBetweenPlayers * loserIndex));
+
+        // ensure the angle is finite before passing it to a location
+        angleDegrees *= 100;
+        angleDegrees = Math.round(angleDegrees);
+        angleDegrees /= 100;
 
         Location finalLoc = new Location(world, firstPlaceLocation.getX() + y, firstPlaceLocation.getY(), firstPlaceLocation.getZ() + x, (float) (180 - angleDegrees), 0);
 

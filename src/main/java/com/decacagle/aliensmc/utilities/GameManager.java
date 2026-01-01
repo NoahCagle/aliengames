@@ -53,6 +53,8 @@ public class GameManager {
 
         plugin.getServer().broadcast(announceMessage);
 
+        if (game.experimental) plugin.getServer().broadcast(Component.text("Warning: This mini-game is experimental. It is recommended that you empty your inventory into a chest before joining.", NamedTextColor.YELLOW));
+
         // schedule tasks to cancel game if host hasn't started the game after a certain period of time
 
         if (plugin.config.hostTimeoutSeconds > 60) {

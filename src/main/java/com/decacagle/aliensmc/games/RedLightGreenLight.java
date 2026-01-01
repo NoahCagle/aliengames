@@ -70,6 +70,7 @@ public class RedLightGreenLight extends Game {
         this.timeBeforeStart = plugin.config.timeBeforeStartSecondsRLGL;
         this.gracePeriodTicks = plugin.config.gracePeriodTicksRLGL;
         this.prettyTitle = plugin.config.prettyTitleRLGL;
+        this.experimental = plugin.config.rlglExperimental;
     }
 
     public void startGame() {
@@ -227,9 +228,10 @@ public class RedLightGreenLight extends Game {
         broadcastMessageToAllPlayers("");
 
         removeScoreboard();
-        Globals.goToLeaderboard(orderedPlayers, world, numWinners, plugin, plugin.congratulationsSong);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.gameManager.stopGame(), 20);
+
+        Globals.goToLeaderboard(orderedPlayers, numWinners, plugin, plugin.congratulationsSong);
     }
 
     public void activateRedLight() {

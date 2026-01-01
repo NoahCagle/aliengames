@@ -1,19 +1,22 @@
 package com.decacagle.aliensmc.listeners;
 
 import com.decacagle.aliensmc.AliensGames;
-import com.decacagle.aliensmc.games.MurderMystery;
+import com.decacagle.aliensmc.games.*;
 import com.decacagle.aliensmc.games.participants.MurderMysteryPlayer;
 import com.decacagle.aliensmc.games.participants.roles.MurderMysteryRole;
 import com.decacagle.aliensmc.utilities.GameManager;
 import com.decacagle.aliensmc.utilities.Globals;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -27,7 +30,7 @@ public class MurderMysteryEvents implements Listener {
         this.gameManager = gameManager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getPlayer();
         if (gameManager.getCurrentGame() instanceof MurderMystery mm) {
@@ -60,6 +63,17 @@ public class MurderMysteryEvents implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         if (gameManager.getCurrentGame() instanceof MurderMystery mm) {
+
+            // block civilian hurting lawman
+
+            if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player defender) {
+                if (mm.playerIsCivilian(attacker) && mm.playerIsLawman(defender)) {
+                    event.setCancelled(true);
+                    attacker.sendRichMessage("<red>You can't attack the Lawman!");
+                }
+            }
+
+            // check for shooting event
             if (!(event.getEntity() instanceof Player)) {
                 return;
             }
@@ -94,6 +108,29 @@ public class MurderMysteryEvents implements Listener {
 
                     }
 
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onChat(AsyncChatEvent event) {
+        if (gameManager.getCurrentGame() instanceof MurderMystery mm) {
+            Player player = event.getPlayer();
+            if (mm.spectators.contains(player)) {
+                event.setCancelled(true);
+                player.sendRichMessage("<yellow>Ssshhh... Spectators can't talk during this game.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        Game currentGame = gameManager.getCurrentGame();
+        if (currentGame instanceof MurderMystery mm) {
+            if (event.getEntity() instanceof Player player) {
+                if (Globals.playerInList(player, mm.participants)) {
+                    event.setCancelled(true);
                 }
             }
         }
